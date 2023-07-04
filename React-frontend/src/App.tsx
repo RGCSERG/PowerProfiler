@@ -18,22 +18,20 @@ const App = () => {
   const [error, setError] = useState("");
   const [isLoading, setLoading] = useState(false);
 
-  const createPost = (data: sendPost) => {
-    //do it with userid for optimistic reloading
+  const createPost = (post: sendPost) => {
+    const temppost = { ...post, _id: 0.1 };
+    setPosts([...posts, temppost]);
     const controller = new AbortController();
-    setLoading(true);
     axios
-      .post<Post[]>("http://127.0.0.1:8000/posts", data, {
+      .post<Post[]>("http://127.0.0.1:8000/posts", post, {
         signal: controller.signal,
       })
       .then((res) => {
-        setLoading(false);
         setPosts([...posts, res.data[0]]);
       })
       .catch((err) => {
         if (err instanceof CanceledError) return;
         setError(err.message);
-        setLoading(false);
       });
     return () => controller.abort();
   };

@@ -51,7 +51,7 @@ async def create_posts(payload: Post):
     post = cursor.fetchall()
     conn.commit()
     json_compatible_item_data = jsonable_encoder(post)
-    return JSONResponse(content=json_compatible_item_data)
+    return json_compatible_item_data
 
 
 @app.get("/posts/{id}")
