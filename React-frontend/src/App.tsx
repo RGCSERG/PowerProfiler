@@ -1,17 +1,9 @@
 import axios, { CanceledError } from "axios";
 import { useEffect, useState } from "react";
 import PostForm from "./backend/components/PostForm";
-
-interface Post {
-  _id: number;
-  title: string;
-  content: string;
-}
-
-interface sendPost {
-  title: string;
-  content: string;
-}
+import PostList from "./backend/components/PostList";
+import { Post, sendPost } from "./backend/interfaces";
+import NavBar from "./backend/components/NavBar";
 
 const App = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -19,7 +11,7 @@ const App = () => {
   const [isLoading, setLoading] = useState(false);
 
   const createPost = (post: sendPost) => {
-    const temppost = { ...post, _id: 0.1 };
+    const temppost = { ...post, _id: 0.1, created_at: Date.now().toString() };
     setPosts([...posts, temppost]);
     const controller = new AbortController();
     axios
@@ -69,28 +61,16 @@ const App = () => {
 
   return (
     <>
+      <NavBar></NavBar>
       <div className="mb-3">
         <PostForm onSubmit={createPost}></PostForm>
       </div>
-      {error && <p className="text-danger">{error}</p>}
-      {isLoading && <div className="spinner-border"></div>}
-      <ul className="list-group">
-        {posts.map((post) => (
-          <li
-            className="list-group-item d-flex justify-content-between"
-            key={post._id}
-          >
-            {post.title}
-            <p>{post.content}</p>
-            <button
-              className="btn btn-outline-danger"
-              onClick={() => deletePost(post)}
-            >
-              Delete
-            </button>
-          </li>
-        ))}
-      </ul>
+      <PostList
+        posts={posts}
+        error={error}
+        isLoading={isLoading}
+        onDelete={deletePost}
+      ></PostList>
     </>
   );
 };
