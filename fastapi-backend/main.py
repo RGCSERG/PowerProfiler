@@ -65,7 +65,8 @@ def get_post(id: int):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"post with id : {id} was not found",
         )
-    return {"data": post}
+    json_compatible_item_data = jsonable_encoder(post)
+    return JSONResponse(content=json_compatible_item_data)
 
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -94,7 +95,8 @@ def update_post(id: int, payload: Post):
             detail=f"post with id : {id} cannot be delete because it does not exist",
         )
     conn.commit()
-    return {"data": post}
+    json_compatible_item_data = jsonable_encoder(post)
+    return JSONResponse(content=json_compatible_item_data)
 
 
 @app.post("/token")
