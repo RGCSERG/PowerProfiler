@@ -7,7 +7,13 @@ with open("password.txt", "r") as f:
     passwo = f.read()
 while True:
     try:
-        conn = psycopg2.connect(host='localhost', database='fast api database', user='postgres', password=f'{passwo}', cursor_factory=RealDictCursor)
+        conn = psycopg2.connect(
+            host="localhost",
+            database="fast api database",
+            user="postgres",
+            password=f"{passwo}",
+            cursor_factory=RealDictCursor,
+        )
         cursor = conn.cursor()
         print("connected to database")
         break

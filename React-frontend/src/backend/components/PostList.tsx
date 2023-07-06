@@ -1,12 +1,14 @@
-import { Post } from "../interfaces";
+import { useState } from "react";
+import { Post, sendPost } from "../interfaces";
 import PostForm from "./PostForm";
+import UpdateForm from "./UpdateForm";
 
 interface Props {
   posts: Post[];
   error: string;
   isLoading: boolean;
   refresh: () => void;
-  onUpdate: (post: Post) => void;
+  onUpdate: (newPost: sendPost, post: Post) => void;
   onDelete: (post: Post) => void;
 }
 
@@ -18,6 +20,8 @@ const PostList = ({
   onUpdate,
   onDelete,
 }: Props) => {
+  const [updatePost, setUpdatePost] = useState(-1);
+
   return (
     <>
       <ul className="list-group">
@@ -35,10 +39,17 @@ const PostList = ({
             className="list-group-item d-flex justify-content-between"
           >
             <div>{post.title}</div>
+            {updatePost === post._id && (
+              <UpdateForm
+                setUpdatePost={setUpdatePost}
+                onSubmit={onUpdate}
+                post={post}
+              />
+            )}
             <div>
               <button
                 className="btn btn-outline-secondary mx-1"
-                onClick={() => onUpdate(post)}
+                onClick={() => setUpdatePost(post._id)}
                 disabled={post._id === 0.1}
               >
                 Update
