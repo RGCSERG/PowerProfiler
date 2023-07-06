@@ -10,35 +10,7 @@ const App = () => {
   const [error, setError] = useState("");
   const [isLoading, setLoading] = useState(false);
 
-  const createPost = (post: sendPost) => {
-    const temppost = { ...post, _id: 0.1, created_at: Date.now().toString() };
-    setPosts([...posts, temppost]);
-    const controller = new AbortController();
-    axios
-      .post<Post[]>("http://127.0.0.1:8000/posts", post, {
-        signal: controller.signal,
-      })
-      .then((res) => {
-        setPosts([...posts, res.data[0]]);
-      })
-      .catch((err) => {
-        if (err instanceof CanceledError) return;
-        setError(err.message);
-      });
-    return () => controller.abort();
-  };
-
-  const deletePost = (post: Post) => {
-    const originalPosts = [...posts];
-    setPosts(posts.filter((p) => p._id !== post._id));
-
-    axios.delete("http://127.0.0.1:8000/posts/" + post._id).catch((err) => {
-      setError(err.message);
-      setPosts(originalPosts);
-    });
-  };
-
-  useEffect(() => {
+  const getPosts = () => {
     const controller = new AbortController();
     setLoading(true);
     axios
@@ -57,6 +29,60 @@ const App = () => {
     // });
 
     return () => controller.abort();
+  };
+
+  const createPost = (post: sendPost) => {
+    const originalPosts = [...posts];
+    const temppost = { ...post, _id: 0.1, created_at: Date.now().toString() };
+    setPosts([...posts, temppost]);
+    const controller = new AbortController();
+    axios
+      .post<Post[]>("http://127.0.0.1:8000/posts", post, {
+        signal: controller.signal,
+      })
+      .then((res) => {
+        setPosts([...posts, res.data[0]]);
+      })
+      .catch((err) => {
+        setPosts(originalPosts);
+        if (err instanceof CanceledError) return;
+        setError(err.message);
+      });
+    return () => controller.abort();
+  };
+  // this is a clusterfuck
+  const updatePost = (post: Post) => {
+    const origialPosts = [...posts];
+    const controller = new AbortController();
+    setPosts(posts.map((p) => (p._id === post._id ? post : p)));
+
+    axios
+      .put<Post>("http://127.0.0.1:8000/posts/" + post._id, post, {
+        signal: controller.signal,
+      })
+      .then((res) => {
+        setPosts(posts.map((p) => (p._id === res.data._id ? res.data : p)));
+      })
+      .catch((err) => {
+        setPosts(origialPosts);
+        if (err instanceof CanceledError) return;
+        setError(err.message);
+      });
+    return () => controller.abort();
+  };
+
+  const deletePost = (post: Post) => {
+    const originalPosts = [...posts];
+    setPosts(posts.filter((p) => p._id !== post._id));
+
+    axios.delete("http://127.0.0.1:8000/posts/" + post._id).catch((err) => {
+      setError(err.message);
+      setPosts(originalPosts);
+    });
+  };
+
+  useEffect(() => {
+    getPosts();
   }, []);
 
   return (
@@ -69,6 +95,8 @@ const App = () => {
         posts={posts}
         error={error}
         isLoading={isLoading}
+        refresh={getPosts}
+        onUpdate={updatePost}
         onDelete={deletePost}
       ></PostList>
     </>
