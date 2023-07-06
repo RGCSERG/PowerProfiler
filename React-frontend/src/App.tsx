@@ -51,8 +51,10 @@ const App = () => {
     return () => controller.abort();
   };
   // this is a clusterfuck
-  const updatePost = (post: Post) => {
+  const updatePost = (newPost: sendPost, post: Post) => {
     const origialPosts = [...posts];
+    post["content"] = newPost["content"];
+    post["title"] = newPost["title"];
     const controller = new AbortController();
     setPosts(posts.map((p) => (p._id === post._id ? post : p)));
 
