@@ -74,12 +74,12 @@ export const App = () => {
   return (
     <>
       <TokenForm onSubmit={getAccessToken} />
+      {isLoading && <div className="spinner-border"></div>}
       {userAccessToken && (
         <UserDataContainer
           user={data}
           error={error}
           refresh={getUserData}
-          isLoading={isLoading}
           onSignOut={signOut}
         />
       )}

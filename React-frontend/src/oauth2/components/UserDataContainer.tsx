@@ -4,18 +4,11 @@ import { User } from "../interfaces";
 interface Props {
   user: User;
   error: string;
-  isLoading: boolean;
   refresh: () => void;
   onSignOut: () => void;
 }
 
-const UserDataContainer = ({
-  user,
-  error,
-  isLoading,
-  refresh,
-  onSignOut,
-}: Props) => {
+const UserDataContainer = ({ user, error, refresh, onSignOut }: Props) => {
   useEffect(() => {
     refresh();
   }, []);
@@ -26,7 +19,6 @@ const UserDataContainer = ({
         Refresh
       </button>
       {error && <p className="text-danger">{error}</p>}
-      {isLoading && <div className="spinner-border"></div>}
       <li
         key={user.id}
         className="list-group-item d-flex justify-content-between"
