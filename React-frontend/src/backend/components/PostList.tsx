@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Post, sendPost } from "../interfaces";
-import PostForm from "./PostForm";
 import UpdateForm from "./UpdateForm";
 
 interface Props {

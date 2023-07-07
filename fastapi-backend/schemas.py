@@ -9,12 +9,12 @@ class Post(BaseModel):
     published: bool = True
 
 
-class User(BaseModel):
-    _id: int
-    username: str
-    password: str
-    active: bool = True
-    _datecreated: str
+# class User(BaseModel):
+#     _id: int
+#     username: str
+#     password: str
+#     active: bool = True
+#     _datecreated: str
 
 
 class Token(BaseModel):
@@ -23,20 +23,19 @@ class Token(BaseModel):
 
 
 class TokenData(BaseModel):
-    id: Union[str, None] = None
+    email: Union[str, None] = None
 
 
 class User(BaseModel):
     id: int
     password: str
-    username: str
     forename: str
-    sername: str
+    surname: str
     email: str
     _date_created: str
     disabled: Union[bool, None] = None
 
 
 class UserRequest(BaseModel):
-    id: int
+    email: str
     password: str

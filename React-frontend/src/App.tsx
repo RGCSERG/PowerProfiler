@@ -1,5 +1,90 @@
+import { useState } from "react";
+import TokenForm from "./oauth2/components/TokenForm";
+import { TokenFormData, User, TokenData } from "./oauth2/interfaces";
+import axios, { CanceledError } from "axios";
+import UserDataContainer from "./oauth2/components/UserDataContainer";
+
 export const App = () => {
-  return <div>App</div>;
+  const [userAccessToken, setUserAccessToken] = useState("");
+  const [userAccessTokenType, setuserAccessTokenType] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setLoading] = useState(false);
+  const [data, setData] = useState<User>({
+    id: 0.1,
+    password: "",
+    forename: "",
+    surname: "",
+    email: "",
+    disabled: false,
+  });
+
+  const getAccessToken = (user: TokenFormData) => {
+    setError("");
+    const controller = new AbortController();
+
+    axios
+      .post<TokenData>("http://localhost:8000/token", user, {
+        signal: controller.signal,
+      })
+      .then((res) => {
+        setUserAccessToken(res.data.access_token);
+        setuserAccessTokenType(res.data.token_type);
+      })
+      .catch((err) => {
+        if (err instanceof CanceledError) return;
+        setError(err.message);
+      });
+    return () => controller.abort();
+  };
+
+  const getUserData = () => {
+    const controller = new AbortController();
+    setError("");
+    setLoading(true);
+
+    axios
+      .get<User>("http://localhost:8000/users/me/", {
+        signal: controller.signal,
+        headers: { Authorization: userAccessTokenType + " " + userAccessToken },
+      })
+      .then((resp) => {
+        setLoading(false);
+        setData(resp.data);
+      })
+      .catch((err) => {
+        if (err instanceof CanceledError) return;
+        setError(err.message);
+      });
+    return () => controller.abort();
+  };
+
+  const signOut = () => {
+    setUserAccessToken("");
+    setuserAccessTokenType("");
+    setData({
+      id: 0.1,
+      password: "",
+      forename: "",
+      surname: "",
+      email: "",
+      disabled: false,
+    });
+  };
+
+  return (
+    <>
+      <TokenForm onSubmit={getAccessToken} />
+      {userAccessToken && (
+        <UserDataContainer
+          user={data}
+          error={error}
+          refresh={getUserData}
+          isLoading={isLoading}
+          onSignOut={signOut}
+        />
+      )}
+    </>
+  );
 };
 
 // import axios, { CanceledError } from "axios";
