@@ -21,6 +21,7 @@ export const App = () => {
   const getAccessToken = (user: TokenFormData) => {
     setError("");
     const controller = new AbortController();
+    setLoading(true);
 
     axios
       .post<TokenData>("http://localhost:8000/token", user, {
@@ -40,7 +41,6 @@ export const App = () => {
   const getUserData = () => {
     const controller = new AbortController();
     setError("");
-    setLoading(true);
 
     axios
       .get<User>("http://localhost:8000/users/me/", {
