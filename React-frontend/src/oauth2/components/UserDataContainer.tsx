@@ -26,6 +26,7 @@ const UserDataContainer = ({ user, error, refresh, onSignOut }: Props) => {
         <div>
           {user.forename} {user.surname}
         </div>
+        <div>{user.email}</div>
         <div>
           {/* <button
               className="btn btn-outline-secondary mx-1"
