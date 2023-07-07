@@ -74,7 +74,7 @@ export const App = () => {
   return (
     <>
       <TokenForm onSubmit={getAccessToken} />
-      {isLoading && <div className="spinner-border my-2"></div>}
+      {isLoading && <div className="spinner-border my-3"></div>}
       {userAccessToken && (
         <UserDataContainer
           user={data}
