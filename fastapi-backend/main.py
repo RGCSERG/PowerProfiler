@@ -33,6 +33,14 @@ def root():
     return {"message": "Hello world"}
 
 
+@app.get("/users")
+async def users() -> dict:
+    cursor.execute("""SELECT * FROM users ORDER BY _id DESC LIMIT 10""")
+    data = cursor.fetchall()
+    json_compatible_item_data = jsonable_encoder(data)
+    return JSONResponse(content=json_compatible_item_data)
+
+
 @app.get("/posts")
 async def posts() -> dict:
     cursor.execute("""SELECT * FROM posts ORDER BY _id DESC LIMIT 10""")
@@ -58,7 +66,7 @@ async def create_posts(payload: Post):
 def get_post(id: int):
     cursor.execute(
         """SELECT * FROM posts WHERE _id = %s """, (str(id),)
-    )  # problems that occur are due to str(id), with a comma making it a tuple while without it, it's not a tuple. i.e:(2,) # is a tuple- 2, # is a tuple- (2) is not a tuple
+    )  # problems that occur are due to str(id), with a comma making it a tuple while without it, it's not a tuple. i.e:(2,) # is a tuple whereas (2) is not a tuple
     post = cursor.fetchone()
     if not post:
         raise HTTPException(
