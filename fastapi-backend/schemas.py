@@ -1,20 +1,12 @@
 from pydantic import BaseModel
 from typing import Optional, Union
-from datetime import datetime
+import datetime
 
 
 class Post(BaseModel):
     title: str
     content: str
     published: bool = True
-
-
-# class User(BaseModel):
-#     _id: int
-#     username: str
-#     password: str
-#     active: bool = True
-#     _datecreated: str
 
 
 class Token(BaseModel):
@@ -28,14 +20,37 @@ class TokenData(BaseModel):
 
 class User(BaseModel):
     id: int
-    password: str
     forename: str
     surname: str
+    password: str
     email: str
-    _date_created: str
+    date_created: str
     disabled: Union[bool, None] = None
 
 
 class UserRequest(BaseModel):
     email: str
     password: str
+
+
+class UpdateUser(BaseModel):
+    forename: str
+    surname: str
+    email: str
+    disabled: Union[bool, None] = None
+
+
+class UserNoPassword(BaseModel):
+    id: int
+    forename: str
+    surname: str
+    email: str
+    date_created: str
+    disabled: Union[bool, None] = None
+
+
+class NewUser(BaseModel):
+    forename: str
+    surname: str
+    password: str
+    email: str

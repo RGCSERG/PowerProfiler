@@ -16,6 +16,7 @@ while True:
         )
         cursor = conn.cursor()
         print("connected to database")
+        conn.rollback()
         break
     except Exception as error:
         print("connection to databse failed")

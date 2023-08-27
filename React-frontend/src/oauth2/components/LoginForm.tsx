@@ -1,25 +1,26 @@
 import { useForm } from "react-hook-form"; // @7.43
 import { z } from "zod"; // @3.20.6
 import { zodResolver } from "@hookform/resolvers/zod"; // @2.9.11
+import { Link } from "react-router-dom";
 
 const schema = z.object({
-  email: z.string().min(3).max(50),
+  email: z.string().min(5).max(50),
   password: z.string().min(3).max(500),
 });
 
-type TokenFormData = z.infer<typeof schema>;
+type LoginFormData = z.infer<typeof schema>;
 
 interface Props {
-  onSubmit: (data: TokenFormData) => void;
+  onSubmit: (data: LoginFormData) => void;
 }
 
-const TokenForm = ({ onSubmit }: Props) => {
+const LoginForm = ({ onSubmit }: Props) => {
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<TokenFormData>({
+  } = useForm<LoginFormData>({
     resolver: zodResolver(schema),
   });
 
@@ -39,6 +40,7 @@ const TokenForm = ({ onSubmit }: Props) => {
           id="email"
           type="text"
           className="form-control"
+          placeholder="example@example.com"
         />
         {errors.email && <p className="text-danger">{errors.email.message}</p>}
       </div>
@@ -49,16 +51,24 @@ const TokenForm = ({ onSubmit }: Props) => {
         <input
           {...register("password")}
           id="password"
-          type="text"
+          type="password"
           className="form-control"
+          placeholder="Password"
         />
         {errors.password && (
           <p className="text-danger">{errors.password.message}</p>
         )}
       </div>
-      <button className="btn btn-primary">Submit</button>
+      <p className="small">
+        <Link to="/" className="text-primary">
+          Forgot password?
+        </Link>
+      </p>
+      <div className="d-grid">
+        <button className="btn btn-primary">Login</button>
+      </div>
     </form>
   );
 };
 
-export default TokenForm;
+export default LoginForm;

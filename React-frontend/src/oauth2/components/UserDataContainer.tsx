@@ -1,24 +1,18 @@
-import { useEffect } from "react";
-import { User } from "../interfaces";
+import { user } from "../interfaces";
 
 interface Props {
-  user: User;
-  error: string;
+  user: user;
   refresh: () => void;
+  updateUser: React.Dispatch<React.SetStateAction<boolean>>;
   onSignOut: () => void;
 }
 
-const UserDataContainer = ({ user, error, refresh, onSignOut }: Props) => {
-  useEffect(() => {
-    refresh();
-  }, []);
-
+const UserDataContainer = ({ user, refresh, onSignOut, updateUser }: Props) => {
   return (
     <ul className="list-group">
       <button className="btn btn-outline-secondary mx-1 my-1" onClick={refresh}>
         Refresh
       </button>
-      {error && <p className="text-danger">{error}</p>}
       <li
         key={user.id}
         className="list-group-item d-flex justify-content-between"
@@ -28,13 +22,13 @@ const UserDataContainer = ({ user, error, refresh, onSignOut }: Props) => {
         </div>
         <div>{user.email}</div>
         <div>
-          {/* <button
-              className="btn btn-outline-secondary mx-1"
-              onClick={() => setUpdateUser()}
-              disabled={user.id === 0.1}
-            >
-              Update
-            </button> */}
+          <button
+            className="btn btn-outline-secondary mx-1"
+            onClick={() => updateUser(true)}
+            disabled={user.id === 0.1}
+          >
+            Update
+          </button>
           <button
             className="btn btn-outline-danger"
             onClick={() => onSignOut()}

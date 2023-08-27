@@ -1,91 +1,17 @@
-import { useEffect, useState } from "react";
-import Cookies from "universal-cookie";
-import TokenForm from "./oauth2/components/TokenForm";
-import { TokenFormData, User, TokenData } from "./oauth2/interfaces";
-import axios, { CanceledError } from "axios";
-import UserDataContainer from "./oauth2/components/UserDataContainer";
-import { baseUserModel } from "./oauth2/constants";
+import Login from "./oauth2/pages/Login";
+import { Route, Routes } from "react-router-dom";
+import UserPage from "./oauth2/pages/UserPage";
+import SignUp from "./oauth2/pages/SignUp";
 
-export const App = () => {
-  const cookies = new Cookies();
-  const options = {
-    secure: true,
-    expires: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
-  };
-  const [userAccessToken, setUserAccessToken] = useState("");
-  const [userAccessTokenType, setuserAccessTokenType] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setLoading] = useState(false);
-  const [data, setData] = useState<User>(baseUserModel);
-
-  const getAccessToken = (user: TokenFormData) => {
-    setError("");
-    const controller = new AbortController();
-    setLoading(true);
-
-    axios
-      .post<TokenData>("http://localhost:8000/token", user, {
-        signal: controller.signal,
-      })
-      .then((res) => {
-        cookies.set("access_token", res.data.access_token, options);
-        cookies.set("token_type", res.data.token_type, options);
-        setUserAccessToken(res.data.access_token);
-        setuserAccessTokenType(res.data.token_type);
-      })
-      .catch((err) => {
-        if (err instanceof CanceledError) return;
-        setError(err.message);
-      });
-    return () => controller.abort();
-  };
-
-  const getUserData = () => {
-    const controller = new AbortController();
-    setError("");
-
-    axios
-      .get<User>("http://localhost:8000/users/me/", {
-        signal: controller.signal,
-        headers: { Authorization: userAccessTokenType + " " + userAccessToken },
-      })
-      .then((resp) => {
-        setLoading(false);
-        setData(resp.data);
-      })
-      .catch((err) => {
-        if (err instanceof CanceledError) return;
-        setError(err.message);
-      });
-    return () => controller.abort();
-  };
-
-  const signOut = () => {
-    setUserAccessToken("");
-    setuserAccessTokenType("");
-    setData(baseUserModel);
-    cookies.remove("access_token");
-    cookies.remove("token_type");
-  };
-
-  useEffect(() => {
-    setUserAccessToken(cookies.get("access_token"));
-    setuserAccessTokenType(cookies.get("token_type"));
-  }, []);
-
+const App = () => {
   return (
-    <>
-      <TokenForm onSubmit={getAccessToken} />
-      {isLoading && <div className="spinner-border my-3"></div>}
-      {userAccessToken && (
-        <UserDataContainer
-          user={data}
-          error={error}
-          refresh={getUserData}
-          onSignOut={signOut}
-        />
-      )}
-    </>
+    <div className="App">
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="signup" element={<SignUp />} />
+        <Route path="/user" element={<UserPage />} />
+      </Routes>
+    </div>
   );
 };
 
