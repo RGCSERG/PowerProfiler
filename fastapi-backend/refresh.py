@@ -4,9 +4,6 @@ from fastapi_jwt_auth import AuthJWT
 from fastapi_jwt_auth.exceptions import AuthJWTException
 import psycopg2
 from pydantic import BaseModel
-from passlib.context import CryptContext
-from .database import conn, cursor
-from fastapi.encoders import jsonable_encoder
 from pyparsing import Any, Literal
 from .database import conn, cursor
 from .schemas import NewUser, User, UserNoPassword, UserRequest, UpdateUser
@@ -17,7 +14,6 @@ from fastapi.middleware.cors import CORSMiddleware
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 app = FastAPI()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 origins = [
     "http://localhost:3000",
@@ -37,36 +33,6 @@ app.add_middleware(
 
 class Settings(BaseModel):
     authjwt_secret_key: str = "secret"
-
-
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
-
-def get_password_hash(password):
-    return pwd_context.hash(password)
-
-
-def get_user(email: str):
-    cursor.execute("""SELECT * FROM public."Users" WHERE email = %s """, (email,))
-    user = cursor.fetchone()
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User not found",
-        )
-    json_compatible_item_data = jsonable_encoder(user)
-    return User(**json_compatible_item_data)
-
-
-def authenticate_user(userData: User):
-    user = get_user(userData.email)
-    if not user:
-        return False
-    if not verify_password(userData.password, user.password):
-        return False
-    return user
 
 
 def createNewUser(data: NewUser) -> User:
