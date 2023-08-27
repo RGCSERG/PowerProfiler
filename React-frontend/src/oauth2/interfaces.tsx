@@ -42,3 +42,7 @@ export interface signUpFormData {
   email: string;
   password: string;
 }
+
+export interface newPlan {
+  type: string;
+}

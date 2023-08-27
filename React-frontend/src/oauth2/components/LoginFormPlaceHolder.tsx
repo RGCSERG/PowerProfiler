@@ -5,9 +5,10 @@ import LoginForm from "./LoginForm";
 
 interface Props {
   onSubmit: (data: loginFormData) => void;
+  error: string;
 }
 
-const LoginFormPlaceHolder = ({ onSubmit }: Props) => {
+const LoginFormPlaceHolder = ({ onSubmit, error }: Props) => {
   return (
     <div>
       <Container>
@@ -23,7 +24,7 @@ const LoginFormPlaceHolder = ({ onSubmit }: Props) => {
                   <img src="/logo.svg" alt="Logo" className="logo-img" />
                 </div>
                 <p className="mb-4">Please enter your login credentials!</p>
-                <LoginForm onSubmit={onSubmit} />
+                <LoginForm onSubmit={onSubmit} error={error} />
                 <div className="mt-3">
                   <p className="mb-0 text-center">
                     Don't have an account?{" "}

@@ -8,7 +8,6 @@ import { errorResponse, plan, user, updatedUser } from "../interfaces";
 import { useEffect, useState } from "react";
 import { refreshAccessToken } from "../HTTPRequests";
 import { Navigate } from "react-router-dom";
-import UpdateUserForm from "../components/UpdateUserForm";
 import { Card, Container, Row, Col } from "react-bootstrap";
 
 const UserPage = () => {
@@ -16,7 +15,6 @@ const UserPage = () => {
   const [plans, setPlans] = useState<plan[]>([]);
   const [userData, setUserData] = useState<user>(baseUserModel);
   const [isLoading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
 
   const getUserPlans = () => {
@@ -107,7 +105,6 @@ const UserPage = () => {
       };
 
       setUserData(updatedUserData);
-      setUpdating(false);
 
       // Prepare for API request
       const controller = new AbortController();
@@ -183,14 +180,11 @@ const UserPage = () => {
                 {isLoading && <div className="spinner-border my-3"></div>}
                 {getToken() && (
                   <UserDataContainer
+                    updateUser={updateUser}
                     user={userData}
                     refresh={refresh}
-                    updateUser={setUpdating}
                     onSignOut={signOut}
                   />
-                )}
-                {updating && (
-                  <UpdateUserForm onSubmit={updateUser} cancel={setUpdating} />
                 )}
                 <div className="mt-3">
                   <p className="mb-0 text-center"></p>

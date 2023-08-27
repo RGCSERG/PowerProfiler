@@ -1,5 +1,11 @@
-import { loginFormData, tokenData, signUpFormData, user } from "./interfaces";
-import axios, { CanceledError } from "axios";
+import {
+  loginFormData,
+  tokenData,
+  signUpFormData,
+  user,
+  errorResponse,
+} from "./interfaces";
+import axios, { AxiosError, CanceledError } from "axios";
 import { setToken } from "./UserManagement";
 import { cookies } from "./Cookies";
 
@@ -21,6 +27,7 @@ export const getAccessToken = (user: loginFormData) => {
     })
     .catch((err) => {
       if (err instanceof CanceledError) return;
+      return handleApiError(err);
     });
 
   return request; // Return the promise directly, not the abort function
@@ -42,10 +49,8 @@ export const refreshAccessToken = async (refresh_token: string) => {
     setToken(response.data.access_token);
     return response; // Return the response
   } catch (err) {
-    if (!(err instanceof CanceledError)) {
-      console.error(err);
-    }
-    throw err; // Rethrow the error to let the caller handle it
+    if (err instanceof CanceledError) return;
+    return handleApiError(err);
   }
 };
 
@@ -59,7 +64,24 @@ export const createUser = async (user: signUpFormData) => {
     .then((res) => {})
     .catch((err) => {
       if (err instanceof CanceledError) return;
+      return handleApiError(err);
     });
 
   return request; // Return the promise directly, not the abort function
+};
+
+const handleApiError = async (err: unknown) => {
+  if (axios.isCancel(err)) {
+    return;
+  }
+
+  if (axios.isAxiosError(err)) {
+    const axiosError = err as AxiosError<errorResponse>;
+
+    if (axiosError.response?.data && axiosError.response.data.detail) {
+      return axiosError.response.data.detail;
+    }
+  } else {
+    console.error(err);
+  }
 };

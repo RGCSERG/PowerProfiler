@@ -10,14 +10,20 @@ from .schemas import NewUser, User, UserNoPassword, UserRequest, UpdateUser
 from fastapi.encoders import jsonable_encoder
 from passlib.context import CryptContext
 from fastapi.middleware.cors import CORSMiddleware
+from .errors import CustomHTTPException
+import logging
+import re
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+logging.basicConfig(level=logging.ERROR)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
 origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
 
@@ -35,6 +41,15 @@ class Settings(BaseModel):
     authjwt_secret_key: str = "secret"
 
 
+def is_valid_email(email: str) -> bool:
+    pattern = r"^[\w\.-]+@[\w\.-]+\.\w+$"
+
+    if re.match(pattern, email):
+        return True
+    else:
+        return CustomHTTPException.invalid_email()
+
+
 def createNewUser(data: NewUser) -> User:
     hashed_password = hashPassword(data.password)
     user = addUserToDb(data=data, hashed_password=hashed_password)
@@ -42,79 +57,64 @@ def createNewUser(data: NewUser) -> User:
 
 
 def addUserToDb(data: NewUser, hashed_password: str) -> User:
-    cursor.execute(
-        """INSERT INTO public."Users" (forename, surname, email, password) VALUES (%s,%s,%s,%s) RETURNING * """,
-        (data.forename, data.surname, data.email, hashed_password),
-    )
     try:
+        cursor.execute(
+            """INSERT INTO public."Users" (forename, surname, email, password) VALUES (%s,%s,%s,%s) RETURNING * """,
+            (data.forename, data.surname, data.email, hashed_password),
+        )
         user = cursor.fetchone()
-    except psycopg2.ProgrammingError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Failed to add User",
-        )
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Failed to add User",
-        )
-    conn.commit()
-    json_compatible_item_data = jsonable_encoder(user)
-    return User(**json_compatible_item_data)
+        if user is None:
+            raise CustomHTTPException.entry_failed()
+
+        conn.commit()
+        json_compatible_item_data = jsonable_encoder(user)
+        return User(**json_compatible_item_data)
+    except psycopg2.DatabaseError as db_error:
+        logger.error("Error while adding user to the database: %s", db_error)
+        raise CustomHTTPException.entry_failed()
 
 
 def update_user(email: str, data: UpdateUser) -> User:
-    cursor.execute(
-        """UPDATE public."Users" SET forename=%s, surname=%s, disabled=%s, email=%s WHERE email=%s RETURNING *""",
-        (data.forename, data.surname, data.disabled, data.email, email),
-    )
     try:
+        cursor.execute(
+            """UPDATE public."Users" SET forename=%s, surname=%s, disabled=%s, email=%s WHERE email=%s RETURNING *""",
+            (data.forename, data.surname, data.disabled, data.email, email),
+        )
         user = cursor.fetchone()
-    except psycopg2.ProgrammingError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User not found",
-        )
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User not found",
-        )
-    conn.commit()
-    json_compatible_item_data = jsonable_encoder(user)
-    return User(**json_compatible_item_data)
+        if user is None:
+            raise CustomHTTPException.user_not_found()
+        conn.commit()
+        json_compatible_item_data = jsonable_encoder(user)
+        return User(**json_compatible_item_data)
+    except psycopg2.DatabaseError as db_error:
+        logger.error("Error while adding user to the database: %s", db_error)
+        raise CustomHTTPException.entry_failed(put=True)
 
 
-def get_user(email: str) -> User:
-    cursor.execute("""SELECT * FROM public."Users" WHERE email = %s """, (email,))
+def get_user(email: str, is_login: bool = False) -> User:
     try:
+        cursor.execute("""SELECT * FROM public."Users" WHERE email = %s """, (email,))
         user = cursor.fetchone()
-    except psycopg2.ProgrammingError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User not found",
-        )
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User not found",
-        )
-    json_compatible_item_data = jsonable_encoder(user)
-    return User(**json_compatible_item_data)
+        if is_login and not user:
+            raise CustomHTTPException.incorrect_credentials()
+        if not user:
+            raise CustomHTTPException.user_not_found()
+        json_compatible_item_data = jsonable_encoder(user)
+        return User(**json_compatible_item_data)
+    except psycopg2.DatabaseError:
+        raise CustomHTTPException.entry_failed()
 
 
 def getUserPlans(email: str) -> Any:
-    id = get_user(email).id
-    cursor.execute("""SELECT * FROM public."Plan" WHERE owner_id = %s """, (id,))
     try:
+        id = get_user(email).id
+        cursor.execute("""SELECT * FROM public."Plan" WHERE owner_id = %s """, (id,))
         plans = cursor.fetchall()
-    except psycopg2.ProgrammingError:
         if not plans:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"No plans found",
-            )
-    return jsonable_encoder(plans)
+            raise CustomHTTPException.plan_not_found()
+        return jsonable_encoder(plans)
+    except psycopg2.DatabaseError:
+        raise CustomHTTPException.entry_failed()
 
 
 def hashPassword(password: str) -> str:
@@ -126,11 +126,11 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def authenticate_user(email: str, password: str) -> User or Literal[False]:
-    user = get_user(email)
+    user = get_user(email=email, is_login=True)
     if not user:
-        return False
+        raise CustomHTTPException.incorrect_credentials()
     if not verify_password(password, user.password):
-        return False
+        raise CustomHTTPException.incorrect_credentials()
     return user
 
 
@@ -146,7 +146,7 @@ def authjwt_exception_handler(request: Request, exc: AuthJWTException) -> JSONRe
 
 @app.post("/login")
 def login(user: UserRequest, Authorize: AuthJWT = Depends()) -> dict[str, str]:
-    authenticate_user(email=user.email, password=user.password)
+    user = authenticate_user(email=user.email, password=user.password)
 
     access_token = Authorize.create_access_token(subject=user.email)
     refresh_token = Authorize.create_refresh_token(subject=user.email)

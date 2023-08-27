@@ -1,13 +1,22 @@
-import { user } from "../interfaces";
+import { useState } from "react";
+import { updatedUser, user } from "../interfaces";
+import UpdateUserForm from "./UpdateUserForm";
 
 interface Props {
   user: user;
   refresh: () => void;
-  updateUser: React.Dispatch<React.SetStateAction<boolean>>;
   onSignOut: () => void;
+  updateUser: (user: updatedUser) => void;
 }
 
 const UserDataContainer = ({ user, refresh, onSignOut, updateUser }: Props) => {
+  const [updating, setUpdating] = useState(false);
+
+  const updateUserData = async (user: updatedUser) => {
+    await updateUser(user);
+    setUpdating(false);
+  };
+
   return (
     <ul className="list-group">
       <button className="btn btn-outline-secondary mx-1 my-1" onClick={refresh}>
@@ -24,7 +33,7 @@ const UserDataContainer = ({ user, refresh, onSignOut, updateUser }: Props) => {
         <div>
           <button
             className="btn btn-outline-secondary mx-1"
-            onClick={() => updateUser(true)}
+            onClick={() => setUpdating(true)}
             disabled={user.id === 0.1}
           >
             Update
@@ -38,6 +47,10 @@ const UserDataContainer = ({ user, refresh, onSignOut, updateUser }: Props) => {
           </button>
         </div>
       </li>
+      <br />
+      {updating && (
+        <UpdateUserForm onSubmit={updateUserData} cancel={setUpdating} />
+      )}
     </ul>
   );
 };

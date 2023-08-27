@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import Zod, { z } from "zod";
+import { z } from "zod";
 
 const schema = z.object({
   email: z
@@ -62,6 +62,7 @@ const UpdateUserForm = ({ onSubmit, cancel }: Props) => {
           id="email"
           type="text"
           className="form-control"
+          placeholder="example@example.com"
           onChange={handleLogoutWarning} // Add onChange event handler
         />
         {errors.email && <p className="text-danger">{errors.email.message}</p>}
@@ -79,6 +80,7 @@ const UpdateUserForm = ({ onSubmit, cancel }: Props) => {
           {...register("forename")}
           id="forename"
           type="text"
+          placeholder="John"
           className="form-control"
         />
         {errors.forename && (
@@ -93,6 +95,7 @@ const UpdateUserForm = ({ onSubmit, cancel }: Props) => {
           {...register("surname")}
           id="surname"
           type="text"
+          placeholder="Smith"
           className="form-control"
         />
         {errors.surname && (

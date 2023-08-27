@@ -7,10 +7,15 @@ import LoginFormPlaceHolder from "../components/LoginFormPlaceHolder";
 
 const Login = () => {
   const [redirectToUser, setRedirectToUser] = useState(false);
+  const [error, setError] = useState("");
 
   const handleTokenSubmit = async (user: loginFormData) => {
-    await getAccessToken(user);
-    setRedirectToUser(true);
+    const error = await getAccessToken(user);
+    if (typeof error === "string") {
+      setError(error);
+    } else if (typeof error !== "string") {
+      setRedirectToUser(true);
+    }
   };
 
   useEffect(() => {
@@ -31,7 +36,7 @@ const Login = () => {
 
   return (
     <>
-      <LoginFormPlaceHolder onSubmit={handleTokenSubmit} />
+      <LoginFormPlaceHolder onSubmit={handleTokenSubmit} error={error} />
     </>
   );
 };
