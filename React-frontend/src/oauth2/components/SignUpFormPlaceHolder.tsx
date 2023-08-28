@@ -5,11 +5,12 @@ import SignUpForm from "./SignUpForm";
 
 interface Props {
   onSubmit: (data: signUpFormData) => void;
+  error: string;
 }
 
-const SignUpFormPlaceHolder = ({ onSubmit }: Props) => {
+const SignUpFormPlaceHolder = ({ onSubmit, error }: Props) => {
   return (
-    <div>
+    <>
       <Container>
         <Row className="vh-100 d-flex justify-content-center align-items-center">
           <Col md={8} lg={6} xs={12}>
@@ -23,7 +24,7 @@ const SignUpFormPlaceHolder = ({ onSubmit }: Props) => {
                   <img src="/logo.svg" alt="Logo" className="logo-img" />
                 </div>
                 <p className="mb-4">Please enter your preferred credentials!</p>
-                <SignUpForm onSubmit={onSubmit} />
+                <SignUpForm onSubmit={onSubmit} error={error} />
                 <div className="mt-3">
                   <p className="mb-0 text-center">
                     Already have an account?{" "}
@@ -37,7 +38,7 @@ const SignUpFormPlaceHolder = ({ onSubmit }: Props) => {
           </Col>
         </Row>
       </Container>
-    </div>
+    </>
   );
 };
 

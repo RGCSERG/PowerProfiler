@@ -32,12 +32,12 @@ const UserPage = () => {
         setLoading(false);
       })
       .catch((err) => {
-        if (err instanceof CanceledError) return;
+        return handleApiError(err);
       });
     return () => controller.abort();
   };
 
-  const handleApiError = async (err: unknown, oldData: user) => {
+  const handleApiError = async (err: unknown) => {
     if (axios.isCancel(err)) {
       return;
     }
@@ -59,14 +59,10 @@ const UserPage = () => {
 
       const errorMessage = axiosError.message || "An error occurred";
       setError(errorMessage); // Set the error message in state
-      console.error(axiosError);
-      setUserData(oldData);
     } else {
       const errorMessage =
         err instanceof Error ? err.message : "An unknown error occurred";
       setError(errorMessage); // Set the error message in state
-      console.error(err);
-      setUserData(oldData);
     }
   };
 
@@ -86,7 +82,7 @@ const UserPage = () => {
       })
       .catch((err: AxiosError<errorResponse>) => {
         if (err instanceof CanceledError) return;
-        handleApiError(err, userData);
+        return handleApiError(err);
       });
     return () => controller.abort();
   };
@@ -130,7 +126,8 @@ const UserPage = () => {
       }
       setUserData(response.data);
     } catch (err: unknown) {
-      handleApiError(err, oldData);
+      setUserData(oldData);
+      return handleApiError(err);
     }
   };
 

@@ -11,11 +11,26 @@ import SignUpFormPlaceHolder from "../components/SignUpFormPlaceHolder";
 
 const SignUp = () => {
   const [redirectToUser, setRedirectToUser] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleError = (error: unknown) => {
+    if (typeof error === "string") {
+      setError(error);
+    } else if (typeof error !== "string") {
+      setRedirectToUser(true);
+    }
+  };
 
   const handleTokenSubmit = async (user: signUpFormData) => {
-    await createUser(user);
-    await getAccessToken({ email: user.email, password: user.password });
-    setRedirectToUser(true);
+    const err = await createUser(user);
+    handleError(err);
+    if (!error) {
+      const err = await getAccessToken({
+        email: user.email,
+        password: user.password,
+      });
+      handleError(err);
+    }
   };
 
   useEffect(() => {
@@ -36,7 +51,7 @@ const SignUp = () => {
 
   return (
     <>
-      <SignUpFormPlaceHolder onSubmit={handleTokenSubmit} />
+      <SignUpFormPlaceHolder onSubmit={handleTokenSubmit} error={error} />
     </>
   );
 };

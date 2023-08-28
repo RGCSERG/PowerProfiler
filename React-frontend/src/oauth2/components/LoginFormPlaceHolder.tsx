@@ -10,7 +10,7 @@ interface Props {
 
 const LoginFormPlaceHolder = ({ onSubmit, error }: Props) => {
   return (
-    <div>
+    <>
       <Container>
         <Row className="vh-100 d-flex justify-content-center align-items-center">
           <Col md={8} lg={6} xs={12}>
@@ -38,7 +38,7 @@ const LoginFormPlaceHolder = ({ onSubmit, error }: Props) => {
           </Col>
         </Row>
       </Container>
-    </div>
+    </>
   );
 };
 

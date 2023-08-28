@@ -194,7 +194,7 @@ def protectedPlans(Authorize: AuthJWT = Depends()) -> Any:
 #     return userData
 
 
-@app.put("/users/@me")
+@app.put("/users/@me", response_model=UserNoPassword, status_code=200)
 def updateUsers(userData: UpdateUser, Authorize: AuthJWT = Depends()) -> UserNoPassword:
     Authorize.jwt_required()
 
@@ -206,7 +206,7 @@ def updateUsers(userData: UpdateUser, Authorize: AuthJWT = Depends()) -> UserNoP
     return current_user
 
 
-@app.post("/users")
+@app.post("/users", response_model=UserNoPassword, status_code=201)
 def newUser(userData: NewUser):
     current_user = UserNoPassword(**jsonable_encoder(createNewUser(data=userData)))
     return current_user

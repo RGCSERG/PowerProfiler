@@ -61,7 +61,9 @@ export const createUser = async (user: signUpFormData) => {
     .post<user>("http://localhost:8000/users", user, {
       signal: controller.signal,
     })
-    .then((res) => {})
+    .then((res) => {
+      return null;
+    })
     .catch((err) => {
       if (err instanceof CanceledError) return;
       return handleApiError(err);
@@ -81,7 +83,12 @@ const handleApiError = async (err: unknown) => {
     if (axiosError.response?.data && axiosError.response.data.detail) {
       return axiosError.response.data.detail;
     }
+
+    const errorMessage = axiosError.message || "An error occurred";
+    return errorMessage;
   } else {
-    console.error(err);
+    const errorMessage =
+      err instanceof Error ? err.message : "An unknown error occurred";
+    return errorMessage; // Set the error message in state
   }
 };
