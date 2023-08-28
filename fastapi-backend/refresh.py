@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, Request, status
+from fastapi import FastAPI, Depends, Request
 from fastapi.responses import JSONResponse
 from fastapi_jwt_auth import AuthJWT
 from fastapi_jwt_auth.exceptions import AuthJWTException
@@ -102,7 +102,9 @@ def get_user(email: str, is_login: bool = False) -> User:
         json_compatible_item_data = jsonable_encoder(user)
         return User(**json_compatible_item_data)
     except psycopg2.DatabaseError:
-        raise CustomHTTPException.entry_failed()
+        if is_login:
+            raise CustomHTTPException.incorrect_credentials()
+        raise CustomHTTPException.user_not_found()
 
 
 def getUserPlans(email: str) -> Any:
@@ -114,7 +116,7 @@ def getUserPlans(email: str) -> Any:
             raise CustomHTTPException.plan_not_found()
         return jsonable_encoder(plans)
     except psycopg2.DatabaseError:
-        raise CustomHTTPException.entry_failed()
+        raise CustomHTTPException.database_error()
 
 
 def hashPassword(password: str) -> str:

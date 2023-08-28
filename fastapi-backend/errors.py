@@ -33,3 +33,7 @@ class CustomHTTPException(HTTPException):
         else:
             detail = "Database error Failed to amend Entry"
         return cls(status_code=500, detail=detail)
+
+    @classmethod
+    def database_error(cls) -> Type["CustomHTTPException"]:
+        return cls(status_code=500, detail="uncaught DB error")
