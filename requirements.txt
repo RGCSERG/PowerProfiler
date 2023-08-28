@@ -4,6 +4,5 @@ psycopg2==2.9.6
 pydantic==1.10.7
 pyparsing==3.0.8
 passlib==1.7.4
-logging==0.4.9.6
 re==2.2.1
 #npm i for frontend requirements

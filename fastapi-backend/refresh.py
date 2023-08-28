@@ -11,13 +11,9 @@ from fastapi.encoders import jsonable_encoder
 from passlib.context import CryptContext
 from fastapi.middleware.cors import CORSMiddleware
 from .errors import CustomHTTPException
-import logging
 import re
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-logging.basicConfig(level=logging.ERROR)
-logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -70,7 +66,6 @@ def addUserToDb(data: NewUser, hashed_password: str) -> User:
         json_compatible_item_data = jsonable_encoder(user)
         return User(**json_compatible_item_data)
     except psycopg2.DatabaseError as db_error:
-        logger.error("Error while adding user to the database: %s", db_error)
         raise CustomHTTPException.entry_failed()
 
 
@@ -87,7 +82,6 @@ def update_user(email: str, data: UpdateUser) -> User:
         json_compatible_item_data = jsonable_encoder(user)
         return User(**json_compatible_item_data)
     except psycopg2.DatabaseError as db_error:
-        logger.error("Error while adding user to the database: %s", db_error)
         raise CustomHTTPException.entry_failed(put=True)
 
 
