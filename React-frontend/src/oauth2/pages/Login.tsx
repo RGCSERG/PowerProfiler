@@ -9,13 +9,17 @@ const Login = () => {
   const [redirectToUser, setRedirectToUser] = useState(false);
   const [error, setError] = useState("");
 
-  const handleTokenSubmit = async (user: loginFormData) => {
-    const error = await getAccessToken(user);
-    if (typeof error === "string") {
-      setError(error);
-    } else if (typeof error !== "string") {
+  const handleError = (requestError: any) => {
+    if (typeof requestError === "string") {
+      setError(requestError);
+    } else if (typeof requestError !== "string") {
       setRedirectToUser(true);
     }
+  };
+
+  const handleTokenSubmit = async (user: loginFormData) => {
+    const requestError = await getAccessToken(user);
+    handleError(requestError);
   };
 
   useEffect(() => {
@@ -25,10 +29,8 @@ const Login = () => {
     const fetchData = async () => {
       if (!accessToken && refreshToken) {
         // Wait for refreshAccessToken to complete
-        await refreshAccessToken(refreshToken);
-        if (!error) {
-          setRedirectToUser(true);
-        }
+        const requestError = await refreshAccessToken(refreshToken);
+        handleError(requestError);
       } else if (accessToken !== null) {
         setRedirectToUser(true);
       }
