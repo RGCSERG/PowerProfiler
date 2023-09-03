@@ -178,7 +178,7 @@ const UserPage = () => {
                 </div>
                 {error && (
                   <Alert key="warning" variant="warning">
-                    {Error}
+                    {error}
                   </Alert>
                 )}
                 {isLoading && <div className="spinner-border my-3"></div>}
