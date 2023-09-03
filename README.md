@@ -8,7 +8,7 @@ the project should be able to work as a full stack application that can handle u
 
 ## Deployment
 
-To deploy this project run (in working directory for project)install requirements then-
+To deploy this project run (in working directory for project) install requirements then-
 
 ```bash
   python -m uvicorn fastapi-backend.refresh:app --reload
