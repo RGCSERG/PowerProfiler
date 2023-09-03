@@ -3,7 +3,7 @@ from passlib.context import CryptContext
 from fastapi.encoders import jsonable_encoder
 import psycopg2
 from .schemas import NewUser, User, UpdateUser
-from .errors import CustomHTTPException
+from .errors import CustomHTTPExceptionImpl
 from .database import conn, cursor
 from pyparsing import Any, Literal
 
@@ -16,7 +16,7 @@ def is_valid_email(email: str) -> bool:
     if re.match(pattern, email):
         return True
     else:
-        return CustomHTTPException.invalid_email()
+        return CustomHTTPExceptionImpl.invalid_email()
 
 
 def createNewUser(data: NewUser) -> User:
@@ -33,13 +33,13 @@ def addUserToDb(data: NewUser, hashed_password: str) -> User:
         )
         user = cursor.fetchone()
         if user is None:
-            raise CustomHTTPException.entry_failed()
+            raise CustomHTTPExceptionImpl.entry_failed()
 
         conn.commit()
         json_compatible_item_data = jsonable_encoder(user)
         return User(**json_compatible_item_data)
     except psycopg2.DatabaseError as db_error:
-        raise CustomHTTPException.entry_failed()
+        raise CustomHTTPExceptionImpl.entry_failed()
 
 
 def update_user(email: str, data: UpdateUser) -> User:
@@ -50,12 +50,12 @@ def update_user(email: str, data: UpdateUser) -> User:
         )
         user = cursor.fetchone()
         if user is None:
-            raise CustomHTTPException.user_not_found()
+            raise CustomHTTPExceptionImpl.user_not_found()
         conn.commit()
         json_compatible_item_data = jsonable_encoder(user)
         return User(**json_compatible_item_data)
     except psycopg2.DatabaseError as db_error:
-        raise CustomHTTPException.entry_failed.put()
+        raise CustomHTTPExceptionImpl.entry_failed.put()
 
 
 def get_user(email: str, is_login: bool = False) -> User:
@@ -63,15 +63,15 @@ def get_user(email: str, is_login: bool = False) -> User:
         cursor.execute("""SELECT * FROM public."Users" WHERE email = %s """, (email,))
         user = cursor.fetchone()
         if is_login and not user:
-            raise CustomHTTPException.incorrect_credentials()
+            raise CustomHTTPExceptionImpl.incorrect_credentials()
         if not user:
-            raise CustomHTTPException.user_not_found()
+            raise CustomHTTPExceptionImpl.user_not_found()
         json_compatible_item_data = jsonable_encoder(user)
         return User(**json_compatible_item_data)
     except psycopg2.DatabaseError:
         if is_login:
-            raise CustomHTTPException.incorrect_credentials()
-        raise CustomHTTPException.user_not_found()
+            raise CustomHTTPExceptionImpl.incorrect_credentials()
+        raise CustomHTTPExceptionImpl.user_not_found()
 
 
 def getUserPlans(email: str) -> Any:
@@ -80,10 +80,10 @@ def getUserPlans(email: str) -> Any:
         cursor.execute("""SELECT * FROM public."Plan" WHERE owner_id = %s """, (id,))
         plans = cursor.fetchall()
         if not plans:
-            raise CustomHTTPException.plan_not_found()
+            raise CustomHTTPExceptionImpl.plan_not_found()
         return jsonable_encoder(plans)
     except psycopg2.DatabaseError:
-        raise CustomHTTPException.database_error()
+        raise CustomHTTPExceptionImpl.database_error()
 
 
 def hashPassword(password: str) -> str:
@@ -97,9 +97,9 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def authenticate_user(email: str, password: str) -> User or Literal[False]:
     user = get_user(email=email, is_login=True)
     if not user:
-        raise CustomHTTPException.incorrect_credentials()
+        raise CustomHTTPExceptionImpl.incorrect_credentials()
     if not verify_password(password, user.password):
-        raise CustomHTTPException.incorrect_credentials()
+        raise CustomHTTPExceptionImpl.incorrect_credentials()
     return user
 
 
