@@ -2,7 +2,6 @@ import { Alert, Button } from "react-bootstrap";
 import { newPlan, plan } from "../interfaces";
 import { useState } from "react";
 import NewPlanForm from "./NewPlanForm";
-import { set } from "react-hook-form";
 
 interface Props {
   plans: plan[];

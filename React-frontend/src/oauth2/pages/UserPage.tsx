@@ -148,7 +148,7 @@ const UserPage = () => {
 
   useEffect(() => {
     const accessToken = getToken();
-    if (accessToken === undefined) {
+    if (accessToken === null) {
       setRedirectToUser(true);
     } else if (redirectToUser === false) {
       refresh();
