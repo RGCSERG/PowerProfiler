@@ -1,4 +1,8 @@
 export const setToken = (token: string) => {
+  if (token === "") {
+    sessionStorage.removeItem("accessToken");
+    return;
+  }
   sessionStorage.setItem("accessToken", token);
 };
 export const getToken = () => {

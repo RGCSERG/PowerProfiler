@@ -1,4 +1,4 @@
-import { getToken } from "../UserManagement";
+import { getToken, setToken } from "../UserManagement";
 import UserDataContainer from "../components/UserDataContainer";
 import UserPlansContainer from "../components/UserPlansContainer";
 import { baseUserModel } from "../constants";
@@ -44,7 +44,6 @@ const UserPage = () => {
 
     if (axios.isAxiosError(err)) {
       const axiosError = err as AxiosError<errorResponse>;
-
       if (
         axiosError.response?.data &&
         (axiosError.response.data.detail === "Signature has expired" ||
@@ -54,7 +53,7 @@ const UserPage = () => {
         if (refresh_token) {
           await refreshAccessToken(refresh_token);
         }
-        setRedirectToUser(true);
+        setToken("");
       }
 
       const errorMessage = axiosError.message || "An error occurred";
@@ -139,9 +138,9 @@ const UserPage = () => {
     setRedirectToUser(true);
   };
 
-  const refresh = () => {
+  const refresh = async () => {
     setError("");
-    getUserData();
+    await getUserData();
     if (!error) {
       getUserPlans();
     }
