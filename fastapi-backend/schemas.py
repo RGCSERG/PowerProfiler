@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Union
+from typing import Type, Union
 from fastapi_jwt_auth import AuthJWT
 from fastapi import Depends
 
@@ -56,7 +56,9 @@ class oauthResponse(BaseModel):
     refresh_token: Union[str, None] = None
 
     @classmethod
-    def create_tokens(cls, user_email: str, Authorize: AuthJWT = Depends()):
+    def create_tokens(
+        cls, user_email: str, Authorize: AuthJWT = Depends()
+    ) -> "oauthResponse":
         access_token = Authorize.create_access_token(subject=user_email)
         refresh_token = Authorize.create_refresh_token(subject=user_email)
         return cls(access_token=access_token, refresh_token=refresh_token)
@@ -66,6 +68,8 @@ class refreshResponse(BaseModel):
     access_token: str
 
     @classmethod
-    def refresh_token(cls, current_user: str, Authorize: AuthJWT = Depends()):
+    def refresh_token(
+        cls, current_user: str, Authorize: AuthJWT = Depends()
+    ) -> "refreshResponse":
         new_access_token = Authorize.create_access_token(subject=current_user)
         return cls(access_token=new_access_token)

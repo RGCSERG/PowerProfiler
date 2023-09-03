@@ -5,7 +5,7 @@ import psycopg2
 from .schemas import NewUser, User, UpdateUser
 from .errors import CustomHTTPExceptionImpl
 from .database import conn, cursor
-from pyparsing import Any, Literal
+from pyparsing import Any
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -94,7 +94,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 
-def authenticate_user(email: str, password: str) -> User or Literal[False]:
+def authenticate_user(email: str, password: str) -> User:
     user = get_user(email=email, is_login=True)
     if not user:
         raise CustomHTTPExceptionImpl.incorrect_credentials()

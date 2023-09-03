@@ -51,5 +51,5 @@ app.include_router(users.router)
 
 
 @app.get("/")
-def root():
+def root() -> dict[str, str]:
     return {"detail": "check /docs or /redoc for usecases and endpoints"}
