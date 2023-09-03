@@ -1,128 +1,55 @@
-# from fastapi import FastAPI, Response, status, HTTPException
-# from fastapi.params import Body
-# from .database import conn, cursor  # (conn, conn2, cursor, cursor2)
-# from .schemas import Post
-# from fastapi.middleware.cors import CORSMiddleware
-# from fastapi.encoders import jsonable_encoder
-# from fastapi.responses import JSONResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from fastapi_jwt_auth import AuthJWT
+from fastapi_jwt_auth.exceptions import AuthJWTException
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+from .routers import oauth2, plans, users
 
-# # http://127.0.0.1:8000/redoc
-# # http://127.0.0.1:8000/docs
-# # python -m uvicorn app.main:app --reload
-# app = FastAPI()
+app = FastAPI()
 
-
-# origins = [
-#     "http://localhost:3000",
-#     "http://127.0.0.1:3000",
-# ]
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
 
 
-# app.add_middleware(
-#     CORSMiddleware,
-#     # allow_origins=origins,
-#     allow_origins=["*"],
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
+app.add_middleware(
+    CORSMiddleware,
+    # allow_origins=origins,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
-# @app.get("/")
-# def root():
-#     return {"message": "Hello world"}
+class Settings(BaseModel):
+    authjwt_secret_key: str = "secret"
 
 
-# @app.get("/users")
-# async def users() -> dict:
-#     cursor.execute("""SELECT * FROM users ORDER BY _id DESC LIMIT 10""")
-#     data = cursor.fetchall()
-#     json_compatible_item_data = jsonable_encoder(data)
-#     return JSONResponse(content=json_compatible_item_data)
+@AuthJWT.load_config
+def get_config() -> Settings:
+    return Settings()
 
 
-# @app.get("/posts")
-# async def posts() -> dict:
-#     cursor.execute("""SELECT * FROM posts ORDER BY _id DESC LIMIT 10""")
-#     data = cursor.fetchall()
-#     json_compatible_item_data = jsonable_encoder(data)
-#     return JSONResponse(content=json_compatible_item_data)
+@app.exception_handler(AuthJWTException)
+def authjwt_exception_handler(request: Request, exc: AuthJWTException) -> JSONResponse:
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
 
 
-# # title str, content str
-# @app.post("/posts", status_code=status.HTTP_201_CREATED)
-# async def create_posts(payload: Post):
-#     cursor.execute(
-#         """INSERT INTO posts (title, content, published) VALUES (%s,%s,%s) RETURNING * """,
-#         (payload.title, payload.content, payload.published),
-#     )
-#     post = cursor.fetchall()
-#     conn.commit()
-#     json_compatible_item_data = jsonable_encoder(post)
-#     return json_compatible_item_data
+app.include_router(oauth2.router)
+app.include_router(plans.router)
+app.include_router(users.router)
+
+# @app.put("users/@me")
+# def updateUser(userData: User, Authorize: AuthJWT = Depends()):
+#     Authorize.jwt_required()
+
+#     current_user = get_user(Authorize.get_jwt_subject())
+#     return userData
 
 
-# @app.get("/posts/{id}")
-# def get_post(id: int):
-#     cursor.execute(
-#         """SELECT * FROM posts WHERE _id = %s """, (str(id),)
-#     )  # problems that occur are due to str(id), with a comma making it a tuple while without it, it's not a tuple. i.e:(2,) # is a tuple whereas (2) is not a tuple
-#     post = cursor.fetchone()
-#     if not post:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail=f"post with id : {id} was not found",
-#         )
-#     json_compatible_item_data = jsonable_encoder(post)
-#     return JSONResponse(content=json_compatible_item_data)
-
-
-# @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
-# def delete_post(id: int):
-#     cursor.execute("""DELETE FROM posts WHERE _id = %s  RETURNING * """, (str(id),))
-#     post = cursor.fetchone()
-#     if post == None:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail=f"post with id : {id} cannot be deleted because it does not exist",
-#         )
-#     conn.commit()
-#     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
-# @app.put("/posts/{id}")
-# def update_post(id: int, payload: Post):
-#     cursor.execute(
-#         """UPDATE posts SET title = %s, content = %s, published = %s  WHERE _id = %s RETURNING *""",
-#         (payload.title, payload.content, payload.published, id),
-#     )
-#     post = cursor.fetchone()
-#     if post == None:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail=f"post with id : {id} cannot be delete because it does not exist",
-#         )
-#     conn.commit()
-#     json_compatible_item_data = jsonable_encoder(post)
-#     return JSONResponse(content=json_compatible_item_data)
-
-
-# @app.post("/token")
-# async def token(payload: Post):
-#     print(payload)
-#     return {"ddd": "dddd"}
-
-
-# # @app.get("/tests")
-# # def get_tests():
-# #     cursor2.execute("""SELECT Public.test1.* from Public.test1""")
-# #     data = cursor2.fetchall()
-# #     return {"data": data}
-
-# # @app.get("/tests/{id}")
-# # def get_test_test(id:int):
-# #     cursor2.execute("""SELECT public.test2.* FROM public.test3, public.test2 WHERE public.test3.test1_id = %s and public.test3.test2_id = public.test2.test2_id; """, (str(id),)) # problems that occur are due to str(id), with a comma making it a tuple while without it, it's not a tuple. i.e:(2,) # is a tuple- 2, # is a tuple- (2) is not a tuple
-# #     data = cursor2.fetchall()
-# #     if not data:
-# #         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"test3s' with id : {id} was not found")
-# #     return {"data" : data}
+@app.get("/")
+def root():
+    return {"detail": "check /docs or /redoc for usecases and endpoints"}

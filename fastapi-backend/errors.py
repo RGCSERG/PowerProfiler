@@ -27,13 +27,18 @@ class CustomHTTPException(HTTPException):
         return cls(status_code=400, detail="Invalid email format")
 
     @classmethod
-    def entry_failed(cls, put: bool = False) -> Type["CustomHTTPException"]:
-        if put == True:
-            detail = "Database error Failed to add Entry"
-        else:
-            detail = "Database error Failed to amend Entry"
-        return cls(status_code=500, detail=detail)
-
-    @classmethod
     def database_error(cls) -> Type["CustomHTTPException"]:
         return cls(status_code=500, detail="uncaught DB error")
+
+    class EntryFailed:
+        def __call__(self):
+            return CustomHTTPException(
+                status_code=500, detail="Database error Failed to amend Entry"
+            )
+
+        def put(self):
+            return CustomHTTPException(
+                status_code=500, detail="Database error Failed to add Entry"
+            )
+
+    entry_failed = EntryFailed()

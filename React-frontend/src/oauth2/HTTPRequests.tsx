@@ -38,7 +38,7 @@ export const refreshAccessToken = async (refresh_token: string) => {
 
   try {
     const response = await axios.post<tokenData>(
-      "http://localhost:8000/users/refresh",
+      "http://localhost:8000/refresh",
       {},
       {
         signal: controller.signal,

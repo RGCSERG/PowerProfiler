@@ -6,6 +6,6 @@ The escalating cost of living crisis and the ever-present energy dilemma has cre
 
 the project should be able to work as a full stack application that can handle user data whilst providing insightful feedback to the user.
 
-to run install requirements then- `python -m uvicorn fastapi-backend.refresh:app --reload`
+to run install requirements then- `python -m uvicorn fastapi-backend.main:app --reload`
 _seperate terminal_
 `cd react-frontend` `npm run dev`
