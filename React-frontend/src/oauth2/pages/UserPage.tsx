@@ -202,7 +202,11 @@ const UserPage = () => {
               <Card.Body>
                 {isLoading && <div className="spinner-border my-3"></div>}
                 {getToken() && (
-                  <UserPlansContainer plans={plans} refresh={refresh} />
+                  <UserPlansContainer
+                    plans={plans}
+                    refresh={refresh}
+                    error={userData.id === 0.1}
+                  />
                 )}
                 <div className="mt-3">
                   <p className="mb-0 text-center"></p>

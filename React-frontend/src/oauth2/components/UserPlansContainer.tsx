@@ -6,9 +6,10 @@ import NewPlanForm from "./NewPlanForm";
 interface Props {
   plans: plan[];
   refresh: () => void;
+  error: boolean;
 }
 
-const UserPlansContainer = ({ plans, refresh }: Props) => {
+const UserPlansContainer = ({ plans, refresh, error }: Props) => {
   const [adding, setAdding] = useState(false);
 
   const updatePlansData = (plan: newPlan) => {
@@ -24,6 +25,7 @@ const UserPlansContainer = ({ plans, refresh }: Props) => {
       <Button
         variant="btn btn-outline-success mx-1 my-1"
         onClick={() => setAdding(true)}
+        disabled={error}
       >
         Add New Plan
       </Button>
