@@ -4,12 +4,6 @@ from fastapi_jwt_auth import AuthJWT
 from fastapi import Depends
 
 
-class Post(BaseModel):
-    title: str
-    content: str
-    published: bool = True
-
-
 class Token(BaseModel):
     access_token: str
     token_type: str

@@ -2,7 +2,8 @@ import { useForm } from "react-hook-form"; // @7.43
 import { z } from "zod"; // @3.20.6
 import { zodResolver } from "@hookform/resolvers/zod"; // @2.9.11
 import { Link } from "react-router-dom";
-import { Alert } from "react-bootstrap";
+import { Alert, Button } from "react-bootstrap";
+import { useState } from "react";
 
 const schema = z.object({
   email: z.string().min(5).max(50),
@@ -17,6 +18,11 @@ interface Props {
 }
 
 const LoginForm = ({ onSubmit, error }: Props) => {
+  const [showAlert, setShowAlert] = useState(false);
+
+  const handleButtonClick = () => {
+    setShowAlert(true);
+  };
   const {
     register,
     handleSubmit,
@@ -66,10 +72,18 @@ const LoginForm = ({ onSubmit, error }: Props) => {
           {error}
         </Alert>
       )}
+      {showAlert && !error && (
+        <Alert key="danger" variant="danger">
+          Network Error
+        </Alert>
+      )}
+      <Button variant="link" onClick={handleButtonClick}>
+        Forgot password?
+      </Button>
       <p className="small">
-        <Link to="/" className="text-primary">
+        {/* <Link to="/" className="text-primary">
           Forgot password?
-        </Link>
+        </Link> */}
       </p>
       <div className="d-grid">
         <button className="btn btn-primary">Login</button>

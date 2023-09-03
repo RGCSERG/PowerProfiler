@@ -22,12 +22,19 @@ const Login = () => {
     const refreshToken = cookies.get("refresh_token");
     const accessToken = sessionStorage.getItem("accessToken");
 
-    if (!accessToken && refreshToken) {
-      refreshAccessToken(refreshToken);
-      setRedirectToUser(true);
-    } else if (accessToken !== null) {
-      setRedirectToUser(true);
-    }
+    const fetchData = async () => {
+      if (!accessToken && refreshToken) {
+        // Wait for refreshAccessToken to complete
+        await refreshAccessToken(refreshToken);
+        if (!error) {
+          setRedirectToUser(true);
+        }
+      } else if (accessToken !== null) {
+        setRedirectToUser(true);
+      }
+    };
+
+    fetchData();
   }, []);
 
   if (redirectToUser) {

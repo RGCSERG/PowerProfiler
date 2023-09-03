@@ -53,6 +53,7 @@ const UserPage = () => {
         if (refresh_token) {
           await refreshAccessToken(refresh_token);
         }
+        setError(axiosError.response.data.detail);
         setToken("");
       }
 
