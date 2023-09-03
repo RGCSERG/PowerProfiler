@@ -8,7 +8,7 @@ import { errorResponse, plan, user, updatedUser } from "../interfaces";
 import { useEffect, useState } from "react";
 import { refreshAccessToken } from "../HTTPRequests";
 import { Navigate } from "react-router-dom";
-import { Card, Container, Row, Col } from "react-bootstrap";
+import { Card, Container, Row, Col, Alert } from "react-bootstrap";
 
 const UserPage = () => {
   const [redirectToUser, setRedirectToUser] = useState(false);
@@ -82,6 +82,7 @@ const UserPage = () => {
       })
       .catch((err: AxiosError<errorResponse>) => {
         if (err instanceof CanceledError) return;
+        setLoading(false);
         return handleApiError(err);
       });
     return () => controller.abort();
@@ -127,6 +128,7 @@ const UserPage = () => {
       setUserData(response.data);
     } catch (err: unknown) {
       setUserData(oldData);
+      setLoading(false);
       return handleApiError(err);
     }
   };
@@ -174,6 +176,11 @@ const UserPage = () => {
                   </h2>
                   <img src="/logo.svg" alt="Logo" className="logo-img" />
                 </div>
+                {error && (
+                  <Alert key="warning" variant="warning">
+                    {Error}
+                  </Alert>
+                )}
                 {isLoading && <div className="spinner-border my-3"></div>}
                 {getToken() && (
                   <UserDataContainer
