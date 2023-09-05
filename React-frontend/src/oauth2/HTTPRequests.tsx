@@ -4,10 +4,13 @@ import {
   signUpFormData,
   user,
   errorResponse,
+  plan,
+  updatedUser,
 } from "./interfaces";
 import axios, { AxiosError, CanceledError } from "axios";
-import { setToken } from "./UserManagement";
-import { cookies } from "./Cookies";
+import { getToken, setToken } from "./UserManagement";
+import { cookies } from "./cookiemanagement";
+import { handleApiError } from "./errors";
 
 const options = {
   secure: true,
@@ -72,23 +75,82 @@ export const createUser = async (user: signUpFormData) => {
   return request; // Return the promise directly, not the abort function
 };
 
-const handleApiError = async (err: unknown) => {
-  if (axios.isCancel(err)) {
-    return;
+export const getUserPlans = async (
+  setPlans: React.Dispatch<React.SetStateAction<plan[]>>
+) => {
+  try {
+    const token = getToken();
+
+    const resp = await axios.get<plan[]>("http://localhost:8000/users/plans", {
+      headers: { Authorization: "Bearer " + token },
+    });
+
+    setPlans(resp.data);
+  } catch (err) {
+    return await handleApiError(err);
   }
+};
 
-  if (axios.isAxiosError(err)) {
-    const axiosError = err as AxiosError<errorResponse>;
+export const getUserData = async (
+  setUserData: React.Dispatch<React.SetStateAction<user>>
+) => {
+  try {
+    const token = getToken();
 
-    if (axiosError.response?.data && axiosError.response.data.detail) {
-      return axiosError.response.data.detail;
+    const resp = await axios.get<user>("http://localhost:8000/users/@me/", {
+      headers: { Authorization: "Bearer " + token },
+    });
+
+    setUserData(resp.data);
+  } catch (err) {
+    return await handleApiError(err);
+  }
+};
+
+export const updateUser = async (
+  newUser: updatedUser,
+  userData: user,
+  setUserData: React.Dispatch<React.SetStateAction<user>>,
+  signOut: () => void
+) => {
+  const oldData = userData;
+  try {
+    // Update local state optimistically
+    const updatedUserData: user = {
+      ...userData,
+      ...(newUser.email !== undefined && { email: newUser.email }),
+      ...(newUser.forename !== undefined && { forename: newUser.forename }),
+      ...(newUser.surname !== undefined && { surname: newUser.surname }),
+      ...(newUser.disabled !== undefined && { disabled: newUser.disabled }),
+      id: 0.1,
+    };
+
+    setUserData(updatedUserData);
+
+    // Prepare for API request
+    const controller = new AbortController();
+    const token = getToken();
+
+    // Perform API request
+    const response = await axios.put<user>(
+      "http://localhost:8000/users/@me/",
+
+      updatedUserData,
+
+      {
+        signal: controller.signal,
+        headers: { Authorization: "Bearer " + token },
+      }
+    );
+
+    // Update local state with response data
+    if (newUser.email !== undefined) {
+      signOut();
+      return;
     }
-
-    const errorMessage = axiosError.message || "An error occurred";
-    return errorMessage;
-  } else {
-    const errorMessage =
-      err instanceof Error ? err.message : "An unknown error occurred";
-    return errorMessage; // Set the error message in state
+    setUserData(response.data);
+  } catch (err: unknown) {
+    setUserData(oldData);
+    return await handleApiError(err);
   }
 };

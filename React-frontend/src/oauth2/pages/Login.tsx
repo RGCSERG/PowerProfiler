@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { cookies } from "../Cookies";
+import { cookies } from "../cookiemanagement";
 import { refreshAccessToken, getAccessToken } from "../HTTPRequests";
 import { Navigate } from "react-router-dom";
 import { loginFormData } from "../interfaces";

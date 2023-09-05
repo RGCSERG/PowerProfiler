@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { cookies } from "../Cookies";
+import { cookies } from "../cookiemanagement";
 import {
   refreshAccessToken,
   createUser,

@@ -1,14 +1,13 @@
-import { getToken, setToken } from "../UserManagement";
+import { getToken } from "../UserManagement";
 import UserDataContainer from "../components/UserDataContainer";
 import UserPlansContainer from "../components/UserPlansContainer";
 import { baseUserModel } from "../constants";
-import { cookies } from "../Cookies";
-import axios, { CanceledError, AxiosError } from "axios";
-import { errorResponse, plan, user, updatedUser } from "../interfaces";
+import { cookies } from "../cookiemanagement";
+import { plan, user, updatedUser } from "../interfaces";
 import { useEffect, useState } from "react";
-import { refreshAccessToken } from "../HTTPRequests";
 import { Navigate } from "react-router-dom";
 import { Card, Container, Row, Col, Alert } from "react-bootstrap";
+import { getUserData, getUserPlans, updateUser } from "../HTTPRequests";
 
 const UserPage = () => {
   const [redirectToUser, setRedirectToUser] = useState(false);
@@ -17,120 +16,16 @@ const UserPage = () => {
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const getUserPlans = () => {
-    const controller = new AbortController();
-    const token = getToken();
+  const handleError = (requestError: any) => {
+    if (typeof requestError === "string") {
+      setError(requestError);
+    }
+  };
+
+  const handleUpdateUser = (user: updatedUser) => {
     setLoading(true);
-
-    axios
-      .get<plan[]>("http://localhost:8000/users/plans", {
-        signal: controller.signal,
-        headers: { Authorization: "Bearer " + token },
-      })
-      .then((resp) => {
-        setPlans(resp.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        return handleApiError(err);
-      });
-    return () => controller.abort();
-  };
-
-  const handleApiError = async (err: unknown) => {
-    if (axios.isCancel(err)) {
-      return;
-    }
-
-    if (axios.isAxiosError(err)) {
-      const axiosError = err as AxiosError<errorResponse>;
-      if (
-        axiosError.response?.data &&
-        (axiosError.response.data.detail === "Signature has expired" ||
-          axiosError.response.data.detail === "Not enough segments")
-      ) {
-        const refresh_token = cookies.get("refresh_token");
-        if (refresh_token) {
-          await refreshAccessToken(refresh_token);
-        }
-        setError(axiosError.response.data.detail);
-        setToken("");
-      }
-
-      const errorMessage = axiosError.message || "An error occurred";
-      setError(errorMessage); // Set the error message in state
-    } else {
-      const errorMessage =
-        err instanceof Error ? err.message : "An unknown error occurred";
-      setError(errorMessage); // Set the error message in state
-    }
-  };
-
-  const getUserData = () => {
-    const controller = new AbortController();
-    const token = getToken();
-    setLoading(true);
-
-    axios
-      .get<user>("http://localhost:8000/users/@me/", {
-        signal: controller.signal,
-        headers: { Authorization: "Bearer " + token },
-      })
-      .then((resp) => {
-        setUserData(resp.data);
-        setLoading(false);
-      })
-      .catch((err: AxiosError<errorResponse>) => {
-        if (err instanceof CanceledError) return;
-        setLoading(false);
-        return handleApiError(err);
-      });
-    return () => controller.abort();
-  };
-
-  const updateUser = async (newUser: updatedUser) => {
-    const oldData = userData;
-    try {
-      // Update local state optimistically
-      const updatedUserData: user = {
-        ...userData,
-        ...(newUser.email !== undefined && { email: newUser.email }),
-        ...(newUser.forename !== undefined && { forename: newUser.forename }),
-        ...(newUser.surname !== undefined && { surname: newUser.surname }),
-        ...(newUser.disabled !== undefined && { disabled: newUser.disabled }),
-        id: 0.1,
-      };
-
-      setUserData(updatedUserData);
-
-      // Prepare for API request
-      const controller = new AbortController();
-      const token = getToken();
-      setLoading(true);
-
-      // Perform API request
-      const response = await axios.put<user>(
-        "http://localhost:8000/users/@me/",
-
-        updatedUserData,
-
-        {
-          signal: controller.signal,
-          headers: { Authorization: "Bearer " + token },
-        }
-      );
-
-      // Update local state with response data
-      setLoading(false);
-      if (newUser.email !== undefined) {
-        signOut();
-      }
-      setUserData(response.data);
-    } catch (err: unknown) {
-      setUserData(oldData);
-      setLoading(false);
-      return handleApiError(err);
-    }
+    handleError(updateUser(user, userData, setUserData, signOut));
+    setLoading(false);
   };
 
   const signOut = () => {
@@ -142,11 +37,13 @@ const UserPage = () => {
   };
 
   const refresh = async () => {
+    setLoading(true);
     setError("");
-    await getUserData();
+    handleError(await getUserData(setUserData));
     if (!error) {
-      getUserPlans();
+      handleError(await getUserPlans(setPlans));
     }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -176,7 +73,7 @@ const UserPage = () => {
                   </h2>
                   <img src="/logo.svg" alt="Logo" className="logo-img" />
                 </div>
-                {error && (
+                {error && userData.id === 0.1 && (
                   <Alert key="warning" variant="warning">
                     {error}
                   </Alert>
@@ -184,7 +81,7 @@ const UserPage = () => {
                 {isLoading && <div className="spinner-border my-3"></div>}
                 {getToken() && (
                   <UserDataContainer
-                    updateUser={updateUser}
+                    updateUser={handleUpdateUser}
                     user={userData}
                     refresh={refresh}
                     onSignOut={signOut}
