@@ -12,7 +12,7 @@ const Login = () => {
   const handleError = (requestError: any) => {
     if (typeof requestError === "string") {
       setError(requestError);
-    } else if (typeof requestError !== "string") {
+    } else if (requestError === null) {
       setRedirectToUser(true);
     }
   };

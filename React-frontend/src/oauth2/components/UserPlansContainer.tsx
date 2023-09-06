@@ -37,7 +37,10 @@ const UserPlansContainer = ({
   return (
     <ul className="list-group">
       {adding && <NewPlanForm onSubmit={updatePlansData} cancel={setAdding} />}
-      <button className="btn btn-outline-secondary mx-1 my-1" onClick={refresh}>
+      <button
+        className="btn btn-outline-secondary mx-1 my-1"
+        onClick={() => refresh()}
+      >
         Refresh
       </button>
       <Button

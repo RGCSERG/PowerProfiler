@@ -4,7 +4,11 @@ import { cookies } from "./cookiemanagement";
 import { refreshAccessToken } from "./HTTPRequests";
 import { setToken } from "./UserManagement";
 
-export const handleApiError = async (err: unknown) => {
+export const handleApiError = async (err: unknown, refresh?: boolean) => {
+  if (refresh) {
+    setToken("");
+    cookies.remove("refresh_token");
+  }
   if (axios.isCancel(err)) {
     return "";
   }
@@ -16,11 +20,11 @@ export const handleApiError = async (err: unknown) => {
       (axiosError.response.data.detail === "Signature has expired" ||
         axiosError.response.data.detail === "Not enough segments")
     ) {
+      setToken("");
       const refresh_token = cookies.get("refresh_token");
       if (refresh_token) {
         await refreshAccessToken(refresh_token);
       }
-      setToken("");
       return axiosError.response.data.detail;
     }
 
