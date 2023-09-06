@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi.encoders import jsonable_encoder
 from .. import schemas
-from ..functions import get_user, update_user, createNewUser
+from ..functions import get_user, is_valid_email, update_user, createNewUser
 from fastapi_jwt_auth import AuthJWT
 
 
@@ -34,6 +34,8 @@ def updateUsers(
 
 @router.post("/", response_model=schemas.UserNoPassword, status_code=201)
 def newUser(userData: schemas.NewUser):
+    is_valid_email(userData.email)
+
     current_user = schemas.UserNoPassword(
         **jsonable_encoder(createNewUser(data=userData))
     )
