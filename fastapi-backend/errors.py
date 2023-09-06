@@ -20,18 +20,6 @@ class CustomHTTPExceptionImpl(CustomHTTPException):
 
     # Class Methods for Error Handling (Encapsulation)
     @classmethod
-    def user_not_found(cls) -> Type[HTTPException]:
-        return cls(status_code=404, detail="User not found")
-
-    @classmethod
-    def plan_not_found(cls) -> Type[HTTPException]:
-        return cls(status_code=404, detail="Plan not found")
-
-    @classmethod
-    def add_user_failed(cls) -> Type[HTTPException]:
-        return cls(status_code=500, detail="Failed to add User")
-
-    @classmethod
     def incorrect_credentials(cls) -> Type[HTTPException]:
         return cls(status_code=401, detail="Email or password incorrect")
 
@@ -48,14 +36,31 @@ class CustomHTTPExceptionImpl(CustomHTTPException):
         # Polymorphism: __call__ method is used differently
         def __call__(self) -> Type[HTTPException]:
             return CustomHTTPExceptionImpl(
-                status_code=500, detail="Database error Failed to amend Entry"
+                status_code=500, detail="Database error Failed to add Entry"
             )
 
         # Polymorphism: put method is used differently
         def put(self) -> Type[HTTPException]:
             return CustomHTTPExceptionImpl(
-                status_code=500, detail="Database error Failed to add Entry"
+                status_code=500, detail="Database error Failed to amend Entry"
             )
+
+        # Polymorphism: delete method is used differently
+        def delete(Self) -> Type[HTTPException]:
+            return CustomHTTPExceptionImpl(
+                status_code=500, detail="Database error Failed to delete Entry"
+            )
+
+    class NotFound:
+        def __call__(self) -> Type[HTTPException]:
+            return CustomHTTPExceptionImpl(status_code=404, detail="Item not found")
+
+        def user(self) -> Type[HTTPException]:
+            return CustomHTTPExceptionImpl(status_code=404, detail="User not found")
+
+        def plan(self) -> Type[HTTPException]:
+            return CustomHTTPExceptionImpl(status_code=404, detail="Plan not found")
 
     # Instance of EntryFailed class (Composition)
     entry_failed = EntryFailed()
+    not_found = NotFound()

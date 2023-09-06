@@ -19,6 +19,7 @@ export interface user {
 
 export interface plan {
   id: number;
+  owner_id: number;
   type: number;
   total_cost: number;
   users: number;
@@ -44,5 +45,5 @@ export interface signUpFormData {
 }
 
 export interface newPlan {
-  type: string;
+  type: number;
 }

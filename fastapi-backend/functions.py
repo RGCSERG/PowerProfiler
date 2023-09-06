@@ -2,7 +2,7 @@ import re
 from passlib.context import CryptContext
 from fastapi.encoders import jsonable_encoder
 import psycopg2
-from .schemas import NewUser, User, UpdateUser
+from . import schemas
 from .errors import CustomHTTPExceptionImpl
 from .database import conn, cursor
 from pyparsing import Any
@@ -19,13 +19,13 @@ def is_valid_email(email: str) -> bool:
         return CustomHTTPExceptionImpl.invalid_email()
 
 
-def createNewUser(data: NewUser) -> User:
+def createNewUser(data: schemas.NewUser) -> schemas.User:
     hashed_password = hashPassword(data.password)
     user = addUserToDb(data=data, hashed_password=hashed_password)
     return user
 
 
-def addUserToDb(data: NewUser, hashed_password: str) -> User:
+def addUserToDb(data: schemas.NewUser, hashed_password: str) -> schemas.User:
     try:
         cursor.execute(
             """INSERT INTO public."Users" (forename, surname, email, password) VALUES (%s,%s,%s,%s) RETURNING * """,
@@ -37,12 +37,12 @@ def addUserToDb(data: NewUser, hashed_password: str) -> User:
 
         conn.commit()
         json_compatible_item_data = jsonable_encoder(user)
-        return User(**json_compatible_item_data)
-    except psycopg2.DatabaseError as db_error:
+        return schemas.User(**json_compatible_item_data)
+    except psycopg2.Error as error:
         raise CustomHTTPExceptionImpl.entry_failed()
 
 
-def update_user(email: str, data: UpdateUser) -> User:
+def update_user(email: str, data: schemas.UpdateUser) -> schemas.User:
     try:
         cursor.execute(
             """UPDATE public."Users" SET forename=%s, surname=%s, disabled=%s, email=%s WHERE email=%s RETURNING *""",
@@ -50,39 +50,39 @@ def update_user(email: str, data: UpdateUser) -> User:
         )
         user = cursor.fetchone()
         if user is None:
-            raise CustomHTTPExceptionImpl.user_not_found()
+            raise CustomHTTPExceptionImpl.not_found.user()
         conn.commit()
         json_compatible_item_data = jsonable_encoder(user)
-        return User(**json_compatible_item_data)
-    except psycopg2.DatabaseError as db_error:
+        return schemas.User(**json_compatible_item_data)
+    except psycopg2.Error as error:
         raise CustomHTTPExceptionImpl.entry_failed.put()
 
 
-def get_user(email: str, is_login: bool = False) -> User:
+def get_user(email: str, is_login: bool = False) -> schemas.User:
     try:
         cursor.execute("""SELECT * FROM public."Users" WHERE email = %s """, (email,))
         user = cursor.fetchone()
         if is_login and not user:
             raise CustomHTTPExceptionImpl.incorrect_credentials()
         if not user:
-            raise CustomHTTPExceptionImpl.user_not_found()
+            raise CustomHTTPExceptionImpl.not_found.user()
         json_compatible_item_data = jsonable_encoder(user)
-        return User(**json_compatible_item_data)
-    except psycopg2.DatabaseError:
+        return schemas.User(**json_compatible_item_data)
+    except psycopg2.Error as error:
         if is_login:
             raise CustomHTTPExceptionImpl.incorrect_credentials()
-        raise CustomHTTPExceptionImpl.user_not_found()
+        raise CustomHTTPExceptionImpl.not_found.user()
 
 
 def getUserPlans(email: str) -> Any:
     try:
         id = get_user(email).id
-        cursor.execute("""SELECT * FROM public."Plan" WHERE owner_id = %s """, (id,))
+        cursor.execute("""SELECT * FROM public."Plans" WHERE owner_id = %s """, (id,))
         plans = cursor.fetchall()
         if not plans:
-            raise CustomHTTPExceptionImpl.plan_not_found()
+            raise CustomHTTPExceptionImpl.not_found.plan()
         return jsonable_encoder(plans)
-    except psycopg2.DatabaseError:
+    except psycopg2.Error as error:
         raise CustomHTTPExceptionImpl.database_error()
 
 
@@ -94,13 +94,61 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 
-def authenticate_user(email: str, password: str) -> User:
+def authenticate_user(email: str, password: str) -> schemas.User:
     user = get_user(email=email, is_login=True)
     if not user:
         raise CustomHTTPExceptionImpl.incorrect_credentials()
     if not verify_password(password, user.password):
         raise CustomHTTPExceptionImpl.incorrect_credentials()
     return user
+
+
+def addUserPlan(data: schemas.AddPlan, owner_id: int) -> schemas.Plan:
+    try:
+        cursor.execute(
+            """INSERT INTO public."Plans" (owner_id, type) VALUES (%s,%s) RETURNING * """,
+            (owner_id, data.type),
+        )
+        plan = cursor.fetchone()
+        if plan is None:
+            raise CustomHTTPExceptionImpl.entry_failed()
+
+        conn.commit()
+        json_compatible_item_data = jsonable_encoder(plan)
+        return schemas.Plan(**json_compatible_item_data)
+    except psycopg2.Error as error:
+        raise CustomHTTPExceptionImpl.entry_failed()
+
+
+def updateUserPlan(data: schemas.UpdatePlan, owner_id: int) -> schemas.Plan:
+    try:
+        cursor.execute(
+            """UPDATE public."Plans" SET type = %s, owner_id = %s WHERE owner_id = %s AND id = %s RETURNING *""",
+            (data.type, data.owner_id, owner_id, data.id),
+        )
+        plan = cursor.fetchone()
+        if plan is None:
+            raise CustomHTTPExceptionImpl.not_found.plan()
+        conn.commit()
+        json_compatible_item_data = jsonable_encoder(plan)
+        return schemas.Plan(**json_compatible_item_data)
+    except psycopg2.Error as error:
+        raise CustomHTTPExceptionImpl.entry_failed.put()
+
+
+def deleteUserPlan(id: int, owner_id: int) -> None:
+    try:
+        cursor.execute(
+            """DELETE FROM public."Plans" WHERE owner_id = %s AND id = %s  RETURNING *""",
+            (owner_id, id),
+        )
+        deleted_plan = cursor.fetchone()
+        if deleted_plan is None:
+            raise CustomHTTPExceptionImpl.not_found.plan()
+        conn.commit()
+        return None
+    except psycopg2.Error as error:
+        raise CustomHTTPExceptionImpl.entry_failed.delete()
 
 
 # from .schemas import User

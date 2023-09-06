@@ -51,25 +51,44 @@ class NewUser(BaseModel):
     email: str
 
 
-class oauthResponse(BaseModel):
+class OauthResponse(BaseModel):
     access_token: str
     refresh_token: Union[str, None] = None
 
     @classmethod
     def create_tokens(
         cls, user_email: str, Authorize: AuthJWT = Depends()
-    ) -> "oauthResponse":
+    ) -> "OauthResponse":
         access_token = Authorize.create_access_token(subject=user_email)
         refresh_token = Authorize.create_refresh_token(subject=user_email)
         return cls(access_token=access_token, refresh_token=refresh_token)
 
 
-class refreshResponse(BaseModel):
+class RefreshResponse(BaseModel):
     access_token: str
 
     @classmethod
     def refresh_token(
         cls, current_user: str, Authorize: AuthJWT = Depends()
-    ) -> "refreshResponse":
+    ) -> "RefreshResponse":
         new_access_token = Authorize.create_access_token(subject=current_user)
         return cls(access_token=new_access_token)
+
+
+class Plan(BaseModel):
+    id: int
+    total_cost: int
+    users: int
+    owner_id: int
+    type: int
+    date_created: str
+
+
+class UpdatePlan(BaseModel):
+    id: int
+    owner_id: int
+    type: int
+
+
+class AddPlan(BaseModel):
+    type: int

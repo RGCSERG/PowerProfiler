@@ -3,14 +3,15 @@ import {
   tokenData,
   signUpFormData,
   user,
-  errorResponse,
   plan,
   updatedUser,
+  newPlan,
 } from "./interfaces";
-import axios, { AxiosError, CanceledError } from "axios";
+import axios, { CanceledError } from "axios";
 import { getToken, setToken } from "./UserManagement";
 import { cookies } from "./cookiemanagement";
 import { handleApiError } from "./errors";
+import { APIUrl } from "./constants";
 
 const options = {
   secure: true,
@@ -21,7 +22,7 @@ export const getAccessToken = (user: loginFormData) => {
   const controller = new AbortController();
 
   const request = axios
-    .post<tokenData>("http://localhost:8000/login", user, {
+    .post<tokenData>(APIUrl + "login", user, {
       signal: controller.signal,
     })
     .then((res) => {
@@ -41,7 +42,7 @@ export const refreshAccessToken = async (refresh_token: string) => {
 
   try {
     const response = await axios.post<tokenData>(
-      "http://localhost:8000/refresh",
+      APIUrl + "refresh",
       {},
       {
         signal: controller.signal,
@@ -61,7 +62,7 @@ export const createUser = async (user: signUpFormData) => {
   const controller = new AbortController();
 
   const request = await axios
-    .post<user>("http://localhost:8000/users", user, {
+    .post<user>(APIUrl + "users", user, {
       signal: controller.signal,
     })
     .then((res) => {
@@ -81,7 +82,7 @@ export const getUserPlans = async (
   try {
     const token = getToken();
 
-    const resp = await axios.get<plan[]>("http://localhost:8000/users/plans", {
+    const resp = await axios.get<plan[]>(APIUrl + "plans/@me", {
       headers: { Authorization: "Bearer " + token },
     });
 
@@ -97,7 +98,7 @@ export const getUserData = async (
   try {
     const token = getToken();
 
-    const resp = await axios.get<user>("http://localhost:8000/users/@me/", {
+    const resp = await axios.get<user>(APIUrl + "users/@me", {
       headers: { Authorization: "Bearer " + token },
     });
 
@@ -133,7 +134,7 @@ export const updateUser = async (
 
     // Perform API request
     const response = await axios.put<user>(
-      "http://localhost:8000/users/@me/",
+      APIUrl + "users/@me",
 
       updatedUserData,
 
@@ -152,5 +153,73 @@ export const updateUser = async (
   } catch (err: unknown) {
     setUserData(oldData);
     return await handleApiError(err);
+  }
+};
+
+export const createPlan = async (
+  data: newPlan,
+  user_id: number,
+  setPlans: React.Dispatch<React.SetStateAction<plan[]>>
+) => {
+  const controller = new AbortController();
+  const token = getToken();
+
+  const newPlan: plan = {
+    ...data,
+    owner_id: user_id,
+    id: 0.1,
+    total_cost: 0,
+    users: 0,
+    date_created: "now",
+  };
+  setPlans((prevPlans) => [...prevPlans, newPlan]);
+  try {
+    const response = await axios.post<plan>(APIUrl + "plans/@me", data, {
+      signal: controller.signal,
+      headers: { Authorization: "Bearer " + token },
+    });
+    setPlans((prevPlans) => prevPlans.filter((plan) => plan.id !== 0.1));
+    setPlans((prevPlans) => [...prevPlans, response.data]);
+    return response.data;
+  } catch (err) {
+    setPlans((prevPlans) => prevPlans.filter((plan) => plan.id !== 0.1));
+    return handleApiError(err);
+  }
+};
+
+export const deletePlan = async (
+  plan_id: number,
+  setPlans: React.Dispatch<React.SetStateAction<plan[]>>
+) => {
+  const controller = new AbortController();
+  const token = getToken();
+
+  let removedPlan: plan = {} as plan;
+
+  setPlans((prevPlans) => {
+    const updatedPlans = prevPlans.filter((plan) => {
+      if (plan.id === plan_id) {
+        removedPlan = plan; // Store the removed plan
+        return false; // Exclude the plan from the updatedPlans array
+      }
+      return true;
+    });
+    return updatedPlans;
+  });
+
+  try {
+    const response = await axios.delete(
+      APIUrl + "plans/@me/" + plan_id.toString(),
+      {
+        signal: controller.signal,
+        headers: { Authorization: "Bearer " + token },
+      }
+    );
+    return;
+  } catch (err) {
+    if (removedPlan.id !== undefined) {
+      setPlans((prevPlans) => [...prevPlans, removedPlan]);
+    }
+    return handleApiError(err);
   }
 };

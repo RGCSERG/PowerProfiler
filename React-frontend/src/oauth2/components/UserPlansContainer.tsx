@@ -7,13 +7,31 @@ interface Props {
   plans: plan[];
   refresh: () => void;
   error: boolean;
+  addNewPlan: (data: newPlan) => void;
+  onDelete: (id: number) => void;
 }
 
-const UserPlansContainer = ({ plans, refresh, error }: Props) => {
+const UserPlansContainer = ({
+  plans,
+  refresh,
+  error,
+  addNewPlan,
+  onDelete,
+}: Props) => {
   const [adding, setAdding] = useState(false);
 
   const updatePlansData = (plan: newPlan) => {
+    addNewPlan(plan);
     setAdding(false);
+  };
+
+  const confirmDelete = (id: number) => {
+    const shouldDelete = window.confirm(
+      "Are you sure you want to delete this plan?"
+    );
+    if (shouldDelete) {
+      onDelete(id);
+    }
   };
 
   return (
@@ -46,7 +64,15 @@ const UserPlansContainer = ({ plans, refresh, error }: Props) => {
               <td>${plan.total_cost}</td>
               <td>{plan.users}</td>
               <td>{plan.date_created}</td>
-              <td></td>
+              <td>
+                <button
+                  className="btn btn-outline-danger"
+                  disabled={plan.id === 0.1}
+                  onClick={() => confirmDelete(plan.id)}
+                >
+                  Delete
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>

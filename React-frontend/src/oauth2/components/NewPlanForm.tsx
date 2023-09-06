@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import planTypes from "../plantypes";
+import { newPlan } from "../interfaces";
 
 const schema = z.object({
   type: z.enum(planTypes, {
@@ -13,12 +14,15 @@ const schema = z.object({
 type newPlanFormData = z.infer<typeof schema>;
 
 interface Props {
-  onSubmit: (data: newPlanFormData) => void;
+  onSubmit: (data: newPlan) => void;
   cancel: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const NewPlanForm = ({ onSubmit, cancel }: Props) => {
-  const handleTypeChange = () => {};
+  const [selectedType, setSelectedType] = useState("");
+  const handleTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedType(event.target.value);
+  };
   const onCancel = () => {
     reset();
     cancel(false);
@@ -31,7 +35,10 @@ const NewPlanForm = ({ onSubmit, cancel }: Props) => {
   } = useForm<newPlanFormData>({ resolver: zodResolver(schema) });
 
   const handleFormSubmit = (data: newPlanFormData) => {
-    onSubmit(data);
+    const newData: newPlan = {
+      type: parseInt(data.type, 10), // Use parseInt to convert to a number
+    };
+    onSubmit(newData);
     reset();
   };
   return (
@@ -46,8 +53,9 @@ const NewPlanForm = ({ onSubmit, cancel }: Props) => {
             id="type"
             className="form-select"
             onChange={handleTypeChange}
+            defaultValue=""
           >
-            <option value="" disabled selected>
+            <option value="" disabled>
               Select a Plan Type
             </option>
             {planTypes.map((type) => (
@@ -58,7 +66,12 @@ const NewPlanForm = ({ onSubmit, cancel }: Props) => {
           </select>
           {errors.type && <p className="text-danger">{errors.type.message}</p>}
         </div>
-        <button className="btn btn-outline-primary">Submit</button>
+        <button
+          className="btn btn-outline-primary"
+          disabled={selectedType === ""}
+        >
+          Submit
+        </button>
         <button
           className="btn btn-outline-danger mx-2"
           type="button"

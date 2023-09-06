@@ -3,11 +3,17 @@ import UserDataContainer from "../components/UserDataContainer";
 import UserPlansContainer from "../components/UserPlansContainer";
 import { baseUserModel } from "../constants";
 import { cookies } from "../cookiemanagement";
-import { plan, user, updatedUser } from "../interfaces";
+import { plan, user, updatedUser, newPlan } from "../interfaces";
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { Card, Container, Row, Col, Alert } from "react-bootstrap";
-import { getUserData, getUserPlans, updateUser } from "../HTTPRequests";
+import {
+  getUserData,
+  getUserPlans,
+  updateUser,
+  createPlan,
+  deletePlan,
+} from "../HTTPRequests";
 
 const UserPage = () => {
   const [redirectToUser, setRedirectToUser] = useState(false);
@@ -20,6 +26,17 @@ const UserPage = () => {
     if (typeof requestError === "string") {
       setError(requestError);
     }
+  };
+
+  const handleDeletePlan = (plan_id: number) => {
+    setLoading(true);
+    handleError(deletePlan(plan_id, setPlans));
+    setLoading(false);
+  };
+  const handleCreatePlan = (data: newPlan) => {
+    setLoading(true);
+    handleError(createPlan(data, userData.id, setPlans));
+    setLoading(false);
   };
 
   const handleUpdateUser = (user: updatedUser) => {
@@ -103,6 +120,8 @@ const UserPage = () => {
                     plans={plans}
                     refresh={refresh}
                     error={userData.id === 0.1}
+                    addNewPlan={handleCreatePlan}
+                    onDelete={handleDeletePlan}
                   />
                 )}
                 <div className="mt-3">

@@ -6,17 +6,17 @@ from .. import schemas
 router = APIRouter(tags=["Authentication"])
 
 
-@router.post("/login", response_model=schemas.oauthResponse)
+@router.post("/login", response_model=schemas.OauthResponse)
 def login(user: schemas.UserRequest, Authorize: AuthJWT = Depends()) -> dict[str, str]:
     user = authenticate_user(email=user.email, password=user.password)
 
-    response = schemas.oauthResponse.create_tokens(
+    response = schemas.OauthResponse.create_tokens(
         user_email=user.email, Authorize=Authorize
     )
     return response
 
 
-@router.post("/refresh", response_model=schemas.refreshResponse)
+@router.post("/refresh", response_model=schemas.RefreshResponse)
 def refresh(Authorize: AuthJWT = Depends()) -> dict[str, str]:
     """
     The jwt_refresh_token_required() function insures a valid refresh
@@ -27,7 +27,7 @@ def refresh(Authorize: AuthJWT = Depends()) -> dict[str, str]:
     Authorize.jwt_refresh_token_required()
 
     current_user = Authorize.get_jwt_subject()
-    response = schemas.refreshResponse.refresh_token(
+    response = schemas.RefreshResponse.refresh_token(
         current_user=current_user, Authorize=Authorize
     )
     return response

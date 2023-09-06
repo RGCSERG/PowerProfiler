@@ -6,3 +6,5 @@ export const baseUserModel = {
   disabled: false,
   date_created: "",
 };
+
+export const APIUrl = "http://localhost:8000/";
