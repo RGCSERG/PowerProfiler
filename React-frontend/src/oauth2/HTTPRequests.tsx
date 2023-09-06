@@ -161,7 +161,7 @@ export const createPlan = async (
   data: newPlan,
   user_id: number,
   setPlans: React.Dispatch<React.SetStateAction<plan[]>>
-): Promise<plan | null> => {
+): Promise<any> => {
   // Specify the return type
   const maxRetryCount = 3; // Maximum number of retry attempts
   let retryCount = 0;
