@@ -25,23 +25,27 @@ const UserPage = () => {
   const handleError = (requestError: any) => {
     if (typeof requestError === "string") {
       setError(requestError);
+      setLoading(false); // Set loading to false to stop the spinner
+      refresh();
+      return; // Return early to prevent further execution
     }
   };
 
-  const handleDeletePlan = (plan_id: number) => {
+  const handleDeletePlan = async (plan_id: number) => {
     setLoading(true);
-    handleError(deletePlan(plan_id, setPlans));
-    setLoading(false);
-  };
-  const handleCreatePlan = (data: newPlan) => {
-    setLoading(true);
-    handleError(createPlan(data, userData.id, setPlans));
+    handleError(await deletePlan(plan_id, setPlans));
     setLoading(false);
   };
 
-  const handleUpdateUser = (user: updatedUser) => {
+  const handleCreatePlan = async (data: newPlan) => {
     setLoading(true);
-    handleError(updateUser(user, userData, setUserData, signOut));
+    handleError(await createPlan(data, userData.id, setPlans));
+    setLoading(false);
+  };
+
+  const handleUpdateUser = async (user: updatedUser) => {
+    setLoading(true);
+    handleError(await updateUser(user, userData, setUserData, signOut));
     setLoading(false);
   };
 
@@ -54,12 +58,16 @@ const UserPage = () => {
   };
 
   const refresh = async () => {
-    setLoading(true);
     setError("");
-    handleError(await getUserData(setUserData));
-    if (!error) {
-      handleError(await getUserPlans(setPlans));
+    setLoading(true);
+    const userDataError = await getUserData(setUserData);
+    handleError(userDataError);
+
+    if (!userDataError) {
+      const plansError = await getUserPlans(setPlans);
+      handleError(plansError);
     }
+
     setLoading(false);
   };
 
@@ -67,10 +75,13 @@ const UserPage = () => {
     const accessToken = getToken();
     if (accessToken === null) {
       setRedirectToUser(true);
-    } else if (redirectToUser === false) {
+      return; // Exit the useEffect early
+    }
+
+    if (redirectToUser === false) {
       refresh();
     }
-  }, [redirectToUser]);
+  }, []);
 
   if (redirectToUser) {
     return <Navigate to="/" />;
@@ -90,7 +101,7 @@ const UserPage = () => {
                   </h2>
                   <img src="/logo.svg" alt="Logo" className="logo-img" />
                 </div>
-                {error && userData.id === 0.1 && (
+                {error && (
                   <Alert key="warning" variant="warning">
                     {error}
                   </Alert>
@@ -115,6 +126,7 @@ const UserPage = () => {
             <Card className="shadow">
               <Card.Body>
                 {isLoading && <div className="spinner-border my-3"></div>}
+
                 {getToken() && (
                   <UserPlansContainer
                     plans={plans}

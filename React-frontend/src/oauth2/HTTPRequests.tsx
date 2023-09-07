@@ -50,11 +50,11 @@ export const refreshAccessToken = async (refresh_token: string) => {
       }
     );
 
-    setToken(response.data.access_token);
-    return response; // Return the response
+    setToken(response.data.access_token); // Make sure this sets the token correctly
+    return null;
   } catch (err) {
     if (err instanceof CanceledError) return;
-    return handleApiError(err);
+    return await handleApiError(err, true);
   }
 };
 
@@ -87,6 +87,7 @@ export const getUserPlans = async (
     });
 
     setPlans(resp.data);
+    return;
   } catch (err) {
     return await handleApiError(err);
   }
@@ -160,31 +161,49 @@ export const createPlan = async (
   data: newPlan,
   user_id: number,
   setPlans: React.Dispatch<React.SetStateAction<plan[]>>
-) => {
-  const controller = new AbortController();
-  const token = getToken();
+): Promise<any> => {
+  // Specify the return type
+  const maxRetryCount = 3; // Maximum number of retry attempts
+  let retryCount = 0;
 
-  const newPlan: plan = {
-    ...data,
-    owner_id: user_id,
-    id: 0.1,
-    total_cost: 0,
-    users: 0,
-    date_created: "now",
+  const attemptRequest = async (): Promise<any> => {
+    // Specify the return type
+    const controller = new AbortController();
+    const token = getToken();
+
+    const newPlan: plan = {
+      ...data,
+      owner_id: user_id,
+      id: 0.1,
+      total_cost: 0,
+      users: 0,
+      date_created: "now",
+    };
+    setPlans((prevPlans) => [...prevPlans, newPlan]);
+
+    try {
+      const response = await axios.post<plan>(APIUrl + "plans/@me", data, {
+        signal: controller.signal,
+        headers: { Authorization: "Bearer " + token },
+      });
+      setPlans((prevPlans) => prevPlans.filter((plan) => plan.id !== 0.1));
+      setPlans((prevPlans) => [...prevPlans, response.data]);
+      return null;
+    } catch (err) {
+      setPlans((prevPlans) => prevPlans.filter((plan) => plan.id !== 0.1));
+      await handleApiError(err);
+      if (retryCount < maxRetryCount) {
+        retryCount++;
+        console.log(`Retrying request (attempt ${retryCount})...`);
+        return attemptRequest(); // Retry the request
+      } else {
+        setPlans((prevPlans) => prevPlans.filter((plan) => plan.id !== 0.1));
+        return await handleApiError(err); // Max retry attempts reached, handle the error
+      }
+    }
   };
-  setPlans((prevPlans) => [...prevPlans, newPlan]);
-  try {
-    const response = await axios.post<plan>(APIUrl + "plans/@me", data, {
-      signal: controller.signal,
-      headers: { Authorization: "Bearer " + token },
-    });
-    setPlans((prevPlans) => prevPlans.filter((plan) => plan.id !== 0.1));
-    setPlans((prevPlans) => [...prevPlans, response.data]);
-    return response.data;
-  } catch (err) {
-    setPlans((prevPlans) => prevPlans.filter((plan) => plan.id !== 0.1));
-    return handleApiError(err);
-  }
+
+  return attemptRequest();
 };
 
 export const deletePlan = async (

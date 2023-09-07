@@ -19,7 +19,10 @@ const UserDataContainer = ({ user, refresh, onSignOut, updateUser }: Props) => {
 
   return (
     <ul className="list-group">
-      <button className="btn btn-outline-secondary mx-1 my-1" onClick={refresh}>
+      <button
+        className="btn btn-outline-secondary mx-1 my-1"
+        onClick={() => refresh()}
+      >
         Refresh
       </button>
       <li

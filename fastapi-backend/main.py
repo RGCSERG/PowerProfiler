@@ -1,3 +1,4 @@
+from datetime import timedelta
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi_jwt_auth import AuthJWT
@@ -26,6 +27,7 @@ app.add_middleware(
 
 class Settings(BaseModel):
     authjwt_secret_key: str = "secret"
+    authjwt_access_token_expires: timedelta = timedelta(minutes=0.1)
 
 
 @AuthJWT.load_config
