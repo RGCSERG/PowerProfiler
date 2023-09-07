@@ -90,5 +90,20 @@ class UpdatePlan(BaseModel):
     type: int
 
 
+class GetIndividualPlan(BaseModel):
+    id: int
+
+
 class AddPlan(BaseModel):
     type: int
+
+
+class TotalPlanData(BaseModel):
+    stuff: str
+
+
+class SubClass(BaseModel):
+    id: int
+    name: str
+    date_created: str
+    plan_id: int

@@ -37,7 +37,7 @@ const Login = () => {
     };
 
     fetchData();
-  }, []);
+  }, [redirectToUser]);
 
   if (redirectToUser) {
     return <Navigate to="/user" />;

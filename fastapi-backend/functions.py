@@ -151,6 +151,133 @@ def deleteUserPlan(id: int, owner_id: int) -> None:
         raise CustomHTTPExceptionImpl.entry_failed.delete()
 
 
+# def getIndiviualPlan(id: int, owner_id: int) -> schemas.TotalPlanData:
+#     try:
+#         cursor.execute(
+#             """SELECT * FROM public."Plans" WHERE owner_id = %s AND id = %s""",
+#             (owner_id, id),
+#         )
+#         plans = cursor.fetchall()
+#         if not plans:
+#             raise CustomHTTPExceptionImpl.not_found.plan()
+#         return schemas.TotalPlanData(plans)
+#     except psycopg2.Error as error:
+#         raise CustomHTTPExceptionImpl.database_error()
+
+
+# def getPlanSubclasses(id: int) -> Any:
+#     try:
+#         cursor.execute(
+#             """SELECT * FROM public."SubClass" WHERE plan_id = %s""",
+#             (id,),
+#         )
+#         sub_class = cursor.fetchall()
+#         if not sub_class:
+#             raise CustomHTTPExceptionImpl.not_found.subClass()
+#         return jsonable_encoder(sub_class)
+#     except psycopg2.Error as error:
+#         raise CustomHTTPExceptionImpl.database_error()
+
+# def getSubClassOwnedAppliances(id:int):
+#     try:
+#         cursor.execute(
+#             """SELECT * FROM public."Owned" WHERE plan_id = %s""",
+#             (id,),
+#         )
+#         sub_class = cursor.fetchall()
+#         if not sub_class:
+#             raise CustomHTTPExceptionImpl.not_found.subClass()
+#         return jsonable_encoder(sub_class)
+#     except psycopg2.Error as error:
+#         raise CustomHTTPExceptionImpl.database_error()
+
+
+def getAllPlanData(id: int, owner_id: int) -> schemas.TotalPlanData:
+    try:
+        cursor.execute(
+            """SELECT
+                P.*,
+                (
+                    SELECT json_agg(
+                        jsonb_build_object(
+                            'id', S.id,
+                            'name', S.name,
+                            'plan_id', S.plan_id,
+                            'date_created', S.date_created,
+                            'appliances',
+                            (
+                                SELECT json_agg(
+                                    json_build_object(
+                                        'id', A.id,
+                                        'name', A.name,
+                                        'data', A.data,
+                                        'date_created', A.date_created
+                                    )
+                                )
+                                FROM public."Appliance" AS A
+                                JOIN public."OwnedAppliance" AS OA ON A.id = OA.appliance_id
+                                WHERE OA.subclass_id = S.id
+                            )
+                        )
+                    )
+                    FROM public."SubClass" AS S
+                    WHERE S.plan_id = P.id
+                ) AS "SubClasses"
+            FROM
+                public."Plans" AS P
+            WHERE
+                P.owner_id = %s P.id = %s;""",
+            (owner_id, id),
+        )
+        total_plan_data = cursor.fetchall()
+        if not total_plan_data:
+            raise CustomHTTPExceptionImpl.not_found.plan()
+        return jsonable_encoder(total_plan_data)
+    except psycopg2.Error as error:
+        raise CustomHTTPExceptionImpl.database_error()
+
+
+def Test(id: int):
+    cursor.execute(
+        """SELECT
+    P.*,
+    (
+        SELECT json_agg(
+            jsonb_build_object(
+                'id', S.id,
+                'name', S.name,
+                'plan_id', S.plan_id,
+                'date_created', S.date_created,
+                'appliances',
+                (
+                    SELECT json_agg(
+                        json_build_object(
+                            'id', A.id,
+                            'name', A.name,
+                            'data', A.data,
+                            'date_created', A.date_created
+                        )
+                    )
+                    FROM public."Appliance" AS A
+                    JOIN public."OwnedAppliance" AS OA ON A.id = OA.appliance_id
+                    WHERE OA.subclass_id = S.id
+                )
+            )
+        )
+        FROM public."SubClass" AS S
+        WHERE S.plan_id = P.id
+    ) AS "SubClasses"
+FROM
+    public."Plans" AS P
+WHERE
+    P.id = 1;
+
+""",
+    )
+    stuff = cursor.fetchall()
+    return jsonable_encoder(stuff)
+
+
 # from .schemas import User
 # from .database import cursor
 

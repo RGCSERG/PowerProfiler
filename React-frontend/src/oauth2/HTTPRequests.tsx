@@ -18,23 +18,20 @@ const options = {
   expires: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
 };
 
-export const getAccessToken = (user: loginFormData) => {
+export const getAccessToken = async (user: loginFormData) => {
   const controller = new AbortController();
 
-  const request = axios
-    .post<tokenData>(APIUrl + "login", user, {
+  try {
+    const response = await axios.post<tokenData>(APIUrl + "login", user, {
       signal: controller.signal,
-    })
-    .then((res) => {
-      cookies.set("refresh_token", res.data.refresh_token, options);
-      setToken(res.data.access_token);
-    })
-    .catch((err) => {
-      if (err instanceof CanceledError) return;
-      return handleApiError(err);
     });
 
-  return request; // Return the promise directly, not the abort function
+    cookies.set("refresh_token", response.data.refresh_token, options);
+    setToken(response.data.access_token);
+    return null;
+  } catch (err) {
+    return await handleApiError(err);
+  }
 };
 
 export const refreshAccessToken = async (refresh_token: string) => {
@@ -53,7 +50,6 @@ export const refreshAccessToken = async (refresh_token: string) => {
     setToken(response.data.access_token); // Make sure this sets the token correctly
     return null;
   } catch (err) {
-    if (err instanceof CanceledError) return;
     return await handleApiError(err, true);
   }
 };
@@ -69,7 +65,6 @@ export const createUser = async (user: signUpFormData) => {
       return null;
     })
     .catch((err) => {
-      if (err instanceof CanceledError) return;
       return handleApiError(err);
     });
 

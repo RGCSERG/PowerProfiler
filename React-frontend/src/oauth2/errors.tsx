@@ -15,16 +15,14 @@ export const handleApiError = async (err: unknown, refresh?: boolean) => {
 
   if (axios.isAxiosError(err)) {
     const axiosError = err as AxiosError<errorResponse>;
-    if (
-      axiosError.response?.data &&
-      (axiosError.response.data.detail === "Signature has expired" ||
-        axiosError.response.data.detail === "Not enough segments")
-    ) {
+
+    if (axiosError.response?.data) {
       setToken("");
       const refresh_token = cookies.get("refresh_token");
       if (refresh_token) {
         await refreshAccessToken(refresh_token);
       }
+
       return axiosError.response.data.detail;
     }
 

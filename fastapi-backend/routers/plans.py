@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Response
 from ..functions import (
     deleteUserPlan,
     get_user,
+    getAllPlanData,
     getUserPlans,
     addUserPlan,
     updateUserPlan,
@@ -50,3 +51,14 @@ def deletePlan(id: int, Authorise: AuthJWT = Depends()) -> Response:
     deleteUserPlan(id=id, owner_id=user_id)
 
     return Response(status_code=204)
+
+
+@router.get("/@me/data", status_code=200)
+def getTotalPlan(
+    data: schemas.GetIndividualPlan, Authorise: AuthJWT = Depends()
+) -> Any:
+    Authorise.jwt_required()
+
+    user_id = get_user(Authorise.get_jwt_subject()).id
+    returnData = getAllPlanData(id=data.id, owner_id=user_id)
+    return returnData

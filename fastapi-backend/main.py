@@ -5,7 +5,7 @@ from fastapi_jwt_auth import AuthJWT
 from fastapi_jwt_auth.exceptions import AuthJWTException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import oauth2, plans, users
+from .routers import oauth2, plans, users, test
 
 app = FastAPI()
 
@@ -43,6 +43,8 @@ def authjwt_exception_handler(request: Request, exc: AuthJWTException) -> JSONRe
 app.include_router(oauth2.router)
 app.include_router(plans.router)
 app.include_router(users.router)
+app.include_router(test.router)
+
 
 # @app.put("users/@me")
 # def updateUser(userData: User, Authorize: AuthJWT = Depends()):
