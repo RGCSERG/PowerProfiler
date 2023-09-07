@@ -192,7 +192,7 @@ def deleteUserPlan(id: int, owner_id: int) -> None:
 #         raise CustomHTTPExceptionImpl.database_error()
 
 
-def getAllPlanData(id: int, owner_id: int) -> schemas.TotalPlanData:
+def getAllPlanData(id: int, owner_id: int) -> Any:
     try:
         cursor.execute(
             """SELECT
