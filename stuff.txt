@@ -1,0 +1,18 @@
+https://eprel.ec.europa.eu./api/products/dishwashers2019/
+708030 - A
+250627- B
+233833- C
+233799- D
+1021481 - E
+1009597 - F
+341903 - G
+
+https://eprel.ec.europa.eu./api/products/washingmachines2019/
+1023257 - A
+1002635 - B
+1004000 - C
+1011607 - D
+1679602 - E
+225706 - F
+370139 - G
+
