@@ -26,11 +26,11 @@ const UserPage = () => {
     if (typeof requestError === "string") {
       setError(requestError);
       setLoading(false); // Set loading to false to stop the spinner
-      if (requestError !== "Network Error") {
-        refresh();
-      }
-      return; // Return early to prevent further execution
     }
+    if (requestError !== "Network Error") {
+      setError("");
+    }
+    return; // Return early to prevent further execution
   };
 
   const handleDeletePlan = async (plan_id: number) => {

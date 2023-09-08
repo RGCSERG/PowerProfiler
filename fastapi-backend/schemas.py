@@ -106,7 +106,7 @@ class SubClass(BaseModel):
     id: int
     name: str
     plan_id: int
-    appliances: List[Appliance]
+    appliances: Union[List[Appliance], None] = None
     date_created: str
 
 
@@ -117,4 +117,4 @@ class TotalPlanData(BaseModel):
     owner_id: int
     users: int
     total_cost: int
-    SubClasses: List[SubClass]
+    SubClasses: Union[List[SubClass], None] = None

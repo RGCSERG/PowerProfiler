@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import { TotalPlanData } from "../interfaces";
 import { baseTotalPlanDataModel } from "../constants";
 import { getIndividualPlan } from "../HTTPRequests";
+import { getToken } from "../UserManagement";
 
 const PlanPage = () => {
   const { id } = useParams();
@@ -13,12 +14,13 @@ const PlanPage = () => {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [redirectToUser, setRedirectToUser] = useState(false);
 
   const handleError = (requestError: any) => {
     if (typeof requestError === "string") {
       setError(requestError);
       setLoading(false); // Set loading to false to stop the spinner
-      if (requestError !== "Network Error") {
+      if (!requestError) {
         refresh();
       }
       return; // Return early to prevent further execution
@@ -39,12 +41,25 @@ const PlanPage = () => {
       setLoading(false);
     }
   };
-  useEffect(() => {}, []);
 
+  useEffect(() => {
+    const accessToken = getToken();
+    if (accessToken === null) {
+      setRedirectToUser(true);
+      return; // Exit the useEffect early
+    }
+
+    if (redirectToUser === false) {
+      refresh();
+    }
+  }, [id]); // Include id as a dependency to trigger the effect when it changes
+  if (redirectToUser) {
+    return <Navigate to="/" />;
+  }
   return (
     <>
-      <div>{id}</div>
-      {individualPlan}
+      <div>ID: {id}</div>
+      <div>{JSON.stringify(individualPlan, null, 2)}</div>
     </>
   );
 };

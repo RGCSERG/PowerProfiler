@@ -254,7 +254,7 @@ export const getIndividualPlan = async (
 
     try {
       const response = await axios.get<TotalPlanData>(
-        APIUrl + "plans/@me" + id.toString(),
+        APIUrl + "plans/@me/" + id.toString(),
         {
           signal: controller.signal,
           headers: { Authorization: "Bearer " + token },

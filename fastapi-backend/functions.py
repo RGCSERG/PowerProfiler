@@ -226,14 +226,14 @@ def getAllPlanData(id: int, owner_id: int) -> schemas.TotalPlanData:
             FROM
                 public."Plans" AS P
             WHERE
-                P.owner_id = %s P.id = %s;""",
+                P.owner_id = %s AND P.id = %s;""",
             (owner_id, id),
         )
-        total_plan_data = cursor.fetchall()
+        total_plan_data = cursor.fetchone()
         if not total_plan_data:
             raise CustomHTTPExceptionImpl.not_found.plan()
         json_compatible_item_data = jsonable_encoder(total_plan_data)
-        return [schemas.TotalPlanData(**item) for item in json_compatible_item_data]
+        return schemas.TotalPlanData(**json_compatible_item_data)
     except psycopg2.Error as error:
         raise CustomHTTPExceptionImpl.database_error()
 
@@ -271,7 +271,7 @@ def Test(id: int):
 FROM
     public."Plans" AS P
 WHERE
-    P.id = 1;
+    P.owner_id = 1 AND P.id = 1;
 
 """,
     )
