@@ -27,7 +27,7 @@ const UserPage = () => {
       setError(requestError);
       setLoading(false); // Set loading to false to stop the spinner
     }
-
+    setLoading(false);
     return; // Return early to prevent further execution
   };
 
@@ -67,8 +67,6 @@ const UserPage = () => {
       const plansError = await getUserPlans(setPlans);
       handleError(plansError);
     }
-
-    setLoading(false);
   };
 
   useEffect(() => {
