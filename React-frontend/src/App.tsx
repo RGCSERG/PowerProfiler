@@ -2,6 +2,7 @@ import Login from "./oauth2/pages/Login";
 import { Route, Routes } from "react-router-dom";
 import UserPage from "./oauth2/pages/UserPage";
 import SignUp from "./oauth2/pages/SignUp";
+import PlanPage from "./oauth2/pages/PlanPage";
 
 const App = () => {
   return (
@@ -10,6 +11,7 @@ const App = () => {
         <Route path="/" element={<Login />} />
         <Route path="signup" element={<SignUp />} />
         <Route path="/user" element={<UserPage />} />
+        <Route path="/post/:id" element={<PlanPage />} />
       </Routes>
     </div>
   );

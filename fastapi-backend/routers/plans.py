@@ -54,7 +54,7 @@ def deletePlan(id: int, Authorise: AuthJWT = Depends()) -> Response:
 
 
 @router.get("/@me/{id}", status_code=200)
-def getTotalPlan(id: int, Authorise: AuthJWT = Depends()) -> Any:
+def getTotalPlan(id: int, Authorise: AuthJWT = Depends()) -> schemas.TotalPlanData:
     Authorise.jwt_required()
 
     user_id = get_user(Authorise.get_jwt_subject()).id

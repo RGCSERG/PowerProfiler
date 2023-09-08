@@ -1,7 +1,6 @@
 import { useForm } from "react-hook-form"; // @7.43
 import { z } from "zod"; // @3.20.6
 import { zodResolver } from "@hookform/resolvers/zod"; // @2.9.11
-import { Link } from "react-router-dom";
 import { Alert } from "react-bootstrap";
 
 const schema = z.object({

@@ -1,5 +1,6 @@
+import datetime
 from pydantic import BaseModel
-from typing import Type, Union
+from typing import List, Type, Union
 from fastapi_jwt_auth import AuthJWT
 from fastapi import Depends
 
@@ -90,20 +91,30 @@ class UpdatePlan(BaseModel):
     type: int
 
 
-class GetIndividualPlan(BaseModel):
-    id: int
-
-
 class AddPlan(BaseModel):
     type: int
 
 
-class TotalPlanData(BaseModel):
-    stuff: str
+class Appliance(BaseModel):
+    id: int
+    data: str
+    name: str
+    date_created: str
 
 
 class SubClass(BaseModel):
     id: int
     name: str
-    date_created: str
     plan_id: int
+    appliances: List[Appliance]
+    date_created: str
+
+
+class TotalPlanData(BaseModel):
+    id: int
+    type: int
+    date_created: str
+    owner_id: int
+    users: int
+    total_cost: int
+    SubClasses: List[SubClass]

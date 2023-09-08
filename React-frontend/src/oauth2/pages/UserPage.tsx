@@ -26,7 +26,9 @@ const UserPage = () => {
     if (typeof requestError === "string") {
       setError(requestError);
       setLoading(false); // Set loading to false to stop the spinner
-      refresh();
+      if (requestError !== "Network Error") {
+        refresh();
+      }
       return; // Return early to prevent further execution
     }
   };

@@ -47,3 +47,28 @@ export interface signUpFormData {
 export interface newPlan {
   type: number;
 }
+
+export interface Appliance {
+  id: number;
+  data: string;
+  name: string;
+  date_created: string;
+}
+
+export interface SubClass {
+  id: number;
+  name: string;
+  plan_id: number;
+  appliances: Appliance[];
+  date_created: string;
+}
+
+export interface TotalPlanData {
+  id: number;
+  type: number;
+  date_created: string;
+  owner_id: number;
+  users: number;
+  total_cost: number;
+  SubClasses: SubClass[];
+}

@@ -6,6 +6,7 @@ import {
   plan,
   updatedUser,
   newPlan,
+  TotalPlanData,
 } from "./interfaces";
 import axios, { CanceledError } from "axios";
 import { getToken, setToken } from "./UserManagement";
@@ -236,4 +237,42 @@ export const deletePlan = async (
     }
     return handleApiError(err);
   }
+};
+
+export const getIndividualPlan = async (
+  id: number,
+  setIndividualPLan: React.Dispatch<React.SetStateAction<TotalPlanData>>
+) => {
+  // Specify the return type
+  const maxRetryCount = 3; // Maximum number of retry attempts
+  let retryCount = 0;
+
+  const attemptRequest = async (): Promise<any> => {
+    // Specify the return type
+    const controller = new AbortController();
+    const token = getToken();
+
+    try {
+      const response = await axios.get<TotalPlanData>(
+        APIUrl + "plans/@me" + id.toString(),
+        {
+          signal: controller.signal,
+          headers: { Authorization: "Bearer " + token },
+        }
+      );
+      setIndividualPLan(response.data);
+      return null;
+    } catch (err) {
+      await handleApiError(err);
+      if (retryCount < maxRetryCount) {
+        retryCount++;
+        console.log(`Retrying request (attempt ${retryCount})...`);
+        return attemptRequest(); // Retry the request
+      } else {
+        return await handleApiError(err); // Max retry attempts reached, handle the error
+      }
+    }
+  };
+
+  return attemptRequest();
 };

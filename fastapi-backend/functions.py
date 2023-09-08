@@ -192,7 +192,7 @@ def deleteUserPlan(id: int, owner_id: int) -> None:
 #         raise CustomHTTPExceptionImpl.database_error()
 
 
-def getAllPlanData(id: int, owner_id: int) -> Any:
+def getAllPlanData(id: int, owner_id: int) -> schemas.TotalPlanData:
     try:
         cursor.execute(
             """SELECT
@@ -232,7 +232,8 @@ def getAllPlanData(id: int, owner_id: int) -> Any:
         total_plan_data = cursor.fetchall()
         if not total_plan_data:
             raise CustomHTTPExceptionImpl.not_found.plan()
-        return jsonable_encoder(total_plan_data)
+        json_compatible_item_data = jsonable_encoder(total_plan_data)
+        return [schemas.TotalPlanData(**item) for item in json_compatible_item_data]
     except psycopg2.Error as error:
         raise CustomHTTPExceptionImpl.database_error()
 
@@ -274,8 +275,9 @@ WHERE
 
 """,
     )
-    stuff = cursor.fetchall()
-    return jsonable_encoder(stuff)
+    stuff = cursor.fetchone()
+    json_compatible_item_data = jsonable_encoder(stuff)
+    return schemas.TotalPlanData(**json_compatible_item_data)
 
 
 # from .schemas import User

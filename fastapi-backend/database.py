@@ -9,7 +9,7 @@ while True:
     try:
         conn = psycopg2.connect(
             host="localhost",
-            database="model_testing_database",  # fast api database # model_testing_database # postgres
+            database="postgres",  # fast api database # model_testing_database # postgres
             user="postgres",
             password=f"{passwo}",
             cursor_factory=RealDictCursor,
