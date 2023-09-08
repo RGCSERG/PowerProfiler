@@ -2,6 +2,7 @@ import { Alert, Button } from "react-bootstrap";
 import { newPlan, plan } from "../interfaces";
 import { useState } from "react";
 import NewPlanForm from "./NewPlanForm";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   plans: plan[];
@@ -19,6 +20,11 @@ const UserPlansContainer = ({
   onDelete,
 }: Props) => {
   const [adding, setAdding] = useState(false);
+  const navigate = useNavigate();
+
+  const goToPlan = (id: number) => {
+    navigate(`/user/plans/${id}`);
+  };
 
   const updatePlansData = (plan: newPlan) => {
     addNewPlan(plan);
@@ -69,11 +75,18 @@ const UserPlansContainer = ({
               <td>{plan.date_created}</td>
               <td>
                 <button
-                  className="btn btn-outline-danger"
+                  className="btn btn-outline-danger mb-1"
                   disabled={plan.id === 0.1}
                   onClick={() => confirmDelete(plan.id)}
                 >
                   Delete
+                </button>
+                <button
+                  className="btn btn-outline-primary mb-1"
+                  disabled={plan.id === 0.1}
+                  onClick={() => goToPlan(plan.id)}
+                >
+                  Edit
                 </button>
               </td>
             </tr>

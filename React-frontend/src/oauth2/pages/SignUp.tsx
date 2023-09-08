@@ -1,49 +1,63 @@
 import { useEffect, useState } from "react";
 import { cookies } from "../cookiemanagement";
+import { Navigate } from "react-router-dom";
+import { signUpFormData } from "../interfaces";
+import SignUpFormPlaceHolder from "../components/SignUpFormPlaceHolder";
+import { getToken } from "../UserManagement";
 import {
   refreshAccessToken,
   createUser,
   getAccessToken,
 } from "../HTTPRequests";
-import { Navigate } from "react-router-dom";
-import { signUpFormData } from "../interfaces";
-import SignUpFormPlaceHolder from "../components/SignUpFormPlaceHolder";
 
 const SignUp = () => {
   const [redirectToUser, setRedirectToUser] = useState(false);
   const [error, setError] = useState("");
 
-  const handleError = (error: unknown) => {
-    if (typeof error === "string") {
-      setError(error);
-    } else if (typeof error !== "string") {
-      setRedirectToUser(true);
+  const handleError = (requestError: string | undefined) => {
+    if (typeof requestError === "string") {
+      setError(requestError);
+      return; // Return early to prevent further execution
     }
   };
 
   const handleTokenSubmit = async (user: signUpFormData) => {
     const err = await createUser(user);
     handleError(err);
-    if (!error) {
+    if (err === undefined) {
       const err = await getAccessToken({
         email: user.email,
         password: user.password,
       });
       handleError(err);
+      if (err === undefined) {
+        setRedirectToUser(true);
+      }
     }
   };
 
   useEffect(() => {
     const refreshToken = cookies.get("refresh_token");
-    const accessToken = sessionStorage.getItem("accessToken");
+    const accessToken = getToken();
 
-    if (!accessToken && refreshToken) {
-      refreshAccessToken(refreshToken);
-      setRedirectToUser(true);
-    } else if (accessToken !== null) {
-      setRedirectToUser(true);
+    if (redirectToUser === true) {
+      return;
     }
-  }, []);
+
+    const refresh = async (): Promise<any> => {
+      if (!accessToken && refreshToken) {
+        const err = await refreshAccessToken(refreshToken);
+        handleError(err);
+        if (err === undefined) {
+          setRedirectToUser(true);
+        }
+      } else if (accessToken !== undefined && refreshToken) {
+        setRedirectToUser(true);
+      }
+    };
+
+    refresh();
+  }, [redirectToUser]);
 
   if (redirectToUser) {
     return <Navigate to="/user" />;

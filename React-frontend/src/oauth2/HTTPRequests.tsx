@@ -8,7 +8,7 @@ import {
   newPlan,
   TotalPlanData,
 } from "./interfaces";
-import axios, { CanceledError } from "axios";
+import axios from "axios";
 import { getToken, setToken } from "./UserManagement";
 import { cookies } from "./cookiemanagement";
 import { handleApiError } from "./errors";
@@ -19,90 +19,156 @@ const options = {
   expires: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
 };
 
-export const getAccessToken = async (user: loginFormData) => {
-  const controller = new AbortController();
+export const getAccessToken = async (user: loginFormData): Promise<any> => {
+  const maxRetryCount = 3; // Maximum number of retry attempts
+  let retryCount = 0;
 
-  try {
-    const response = await axios.post<tokenData>(APIUrl + "login", user, {
-      signal: controller.signal,
-    });
+  const attemptRequest = async (): Promise<any> => {
+    try {
+      const response = await axios.post<tokenData>(APIUrl + "login", user);
 
-    cookies.set("refresh_token", response.data.refresh_token, options);
-    setToken(response.data.access_token);
-    return null;
-  } catch (err) {
-    return await handleApiError(err);
-  }
+      cookies.set("refresh_token", response.data.refresh_token, options);
+      setToken(response.data.access_token);
+
+      return undefined;
+    } catch (err) {
+      await handleApiError(err);
+
+      if (retryCount < maxRetryCount) {
+        retryCount++;
+        console.log(`Retrying request (attempt ${retryCount})...`);
+
+        return attemptRequest(); // Retry the request
+      } else {
+        return await handleApiError(err);
+      } // Max retry attempts reached, handle the error
+    }
+  };
+  return attemptRequest();
 };
 
-export const refreshAccessToken = async (refresh_token: string) => {
-  const controller = new AbortController();
+export const refreshAccessToken = async (
+  refresh_token: string
+): Promise<any> => {
+  const maxRetryCount = 3; // Maximum number of retry attempts
+  let retryCount = 0;
 
-  try {
-    const response = await axios.post<tokenData>(
-      APIUrl + "refresh",
-      {},
-      {
-        signal: controller.signal,
-        headers: { Authorization: "Bearer " + refresh_token },
+  const attemptRequest = async (): Promise<any> => {
+    try {
+      const response = await axios.post<tokenData>(
+        APIUrl + "refresh",
+        {},
+        {
+          headers: { Authorization: "Bearer " + refresh_token },
+        }
+      );
+
+      setToken(response.data.access_token); // Make sure this sets the token correctly
+
+      return undefined;
+    } catch (err) {
+      await handleApiError(err);
+
+      if (retryCount < maxRetryCount) {
+        retryCount++;
+        console.log(`Retrying request (attempt ${retryCount})...`);
+
+        return attemptRequest(); // Retry the request
+      } else {
+        return await handleApiError(err);
       }
-    );
-
-    setToken(response.data.access_token); // Make sure this sets the token correctly
-    return null;
-  } catch (err) {
-    return await handleApiError(err, true);
-  }
+    }
+  };
+  return attemptRequest();
 };
 
-export const createUser = async (user: signUpFormData) => {
-  const controller = new AbortController();
+export const createUser = async (user: signUpFormData): Promise<any> => {
+  const maxRetryCount = 3; // Maximum number of retry attempts
+  let retryCount = 0;
 
-  const request = await axios
-    .post<user>(APIUrl + "users", user, {
-      signal: controller.signal,
-    })
-    .then((res) => {
-      return null;
-    })
-    .catch((err) => {
-      return handleApiError(err);
-    });
+  const attemptRequest = async (): Promise<any> => {
+    try {
+      const response = await axios.post<user>(APIUrl + "users", user);
 
-  return request; // Return the promise directly, not the abort function
+      return undefined;
+    } catch (err) {
+      await handleApiError(err);
+
+      if (retryCount < maxRetryCount) {
+        retryCount++;
+        console.log(`Retrying request (attempt ${retryCount})...`);
+
+        return attemptRequest(); // Retry the request
+      } else {
+        return await handleApiError(err);
+      }
+    }
+  };
+  return attemptRequest();
 };
 
 export const getUserPlans = async (
   setPlans: React.Dispatch<React.SetStateAction<plan[]>>
-) => {
-  try {
-    const token = getToken();
+): Promise<any> => {
+  const maxRetryCount = 3; // Maximum number of retry attempts
+  let retryCount = 0;
 
-    const resp = await axios.get<plan[]>(APIUrl + "plans/@me", {
-      headers: { Authorization: "Bearer " + token },
-    });
+  const attemptRequest = async (): Promise<any> => {
+    try {
+      const token = getToken();
 
-    setPlans(resp.data);
-    return;
-  } catch (err) {
-    return await handleApiError(err);
-  }
+      const response = await axios.get<plan[]>(APIUrl + "plans/@me", {
+        headers: { Authorization: "Bearer " + token },
+      });
+
+      setPlans(response.data);
+
+      return undefined;
+    } catch (err) {
+      await handleApiError(err);
+
+      if (retryCount < maxRetryCount) {
+        retryCount++;
+        console.log(`Retrying request (attempt ${retryCount})...`);
+
+        return attemptRequest(); // Retry the request
+      } else {
+        return await handleApiError(err);
+      }
+    }
+  };
+  return attemptRequest();
 };
 
 export const getUserData = async (
   setUserData: React.Dispatch<React.SetStateAction<user>>
-) => {
-  try {
-    const token = getToken();
+): Promise<any> => {
+  const maxRetryCount = 3; // Maximum number of retry attempts
+  let retryCount = 0;
 
-    const resp = await axios.get<user>(APIUrl + "users/@me", {
-      headers: { Authorization: "Bearer " + token },
-    });
+  const attemptRequest = async (): Promise<any> => {
+    try {
+      const token = getToken();
 
-    setUserData(resp.data);
-  } catch (err) {
-    return await handleApiError(err);
-  }
+      const resp = await axios.get<user>(APIUrl + "users/@me", {
+        headers: { Authorization: "Bearer " + token },
+      });
+
+      setUserData(resp.data);
+    } catch (err) {
+      await handleApiError(err);
+
+      if (retryCount < maxRetryCount) {
+        retryCount++;
+        console.log(`Retrying request (attempt ${retryCount})...`);
+
+        return attemptRequest(); // Retry the request
+      } else {
+        return await handleApiError(err);
+      }
+    }
+  };
+  return attemptRequest();
 };
 
 export const updateUser = async (
@@ -110,47 +176,62 @@ export const updateUser = async (
   userData: user,
   setUserData: React.Dispatch<React.SetStateAction<user>>,
   signOut: () => void
-) => {
+): Promise<any> => {
   const oldData = userData;
-  try {
-    // Update local state optimistically
-    const updatedUserData: user = {
-      ...userData,
-      ...(newUser.email !== undefined && { email: newUser.email }),
-      ...(newUser.forename !== undefined && { forename: newUser.forename }),
-      ...(newUser.surname !== undefined && { surname: newUser.surname }),
-      ...(newUser.disabled !== undefined && { disabled: newUser.disabled }),
-      id: 0.1,
-    };
 
-    setUserData(updatedUserData);
+  const maxRetryCount = 3; // Maximum number of retry attempts
+  let retryCount = 0;
 
-    // Prepare for API request
-    const controller = new AbortController();
-    const token = getToken();
+  // Update local state optimistically
+  const updatedUserData: user = {
+    ...userData,
+    ...(newUser.email !== undefined && { email: newUser.email }),
+    ...(newUser.forename !== undefined && { forename: newUser.forename }),
+    ...(newUser.surname !== undefined && { surname: newUser.surname }),
+    ...(newUser.disabled !== undefined && { disabled: newUser.disabled }),
+    id: 0.1,
+  };
 
-    // Perform API request
-    const response = await axios.put<user>(
-      APIUrl + "users/@me",
+  setUserData(updatedUserData);
 
-      updatedUserData,
+  const attemptRequest = async (): Promise<any> => {
+    try {
+      const token = getToken();
 
-      {
-        signal: controller.signal,
-        headers: { Authorization: "Bearer " + token },
+      // Perform API request
+      const response = await axios.put<user>(
+        APIUrl + "users/@me",
+        updatedUserData,
+        {
+          headers: { Authorization: "Bearer " + token },
+        }
+      );
+
+      if (newUser.email !== undefined) {
+        // Signout user if they changed their email
+        signOut();
+        return;
       }
-    );
 
-    // Update local state with response data
-    if (newUser.email !== undefined) {
-      signOut();
-      return;
+      setUserData(response.data);
+
+      return undefined;
+    } catch (err) {
+      await handleApiError(err);
+
+      if (retryCount < maxRetryCount) {
+        retryCount++;
+        console.log(`Retrying request (attempt ${retryCount})...`);
+
+        return attemptRequest(); // Retry the request
+      } else {
+        setUserData(oldData);
+
+        return await handleApiError(err);
+      }
     }
-    setUserData(response.data);
-  } catch (err: unknown) {
-    setUserData(oldData);
-    return await handleApiError(err);
-  }
+  };
+  return attemptRequest();
 };
 
 export const createPlan = async (
@@ -158,42 +239,42 @@ export const createPlan = async (
   user_id: number,
   setPlans: React.Dispatch<React.SetStateAction<plan[]>>
 ): Promise<any> => {
-  // Specify the return type
   const maxRetryCount = 3; // Maximum number of retry attempts
   let retryCount = 0;
 
+  const newPlan: plan = {
+    ...data,
+    owner_id: user_id,
+    id: 0.1,
+    total_cost: 0,
+    users: 0,
+    date_created: "now",
+  };
+  setPlans((prevPlans) => [...prevPlans, newPlan]);
+
   const attemptRequest = async (): Promise<any> => {
-    // Specify the return type
-    const controller = new AbortController();
-    const token = getToken();
-
-    const newPlan: plan = {
-      ...data,
-      owner_id: user_id,
-      id: 0.1,
-      total_cost: 0,
-      users: 0,
-      date_created: "now",
-    };
-    setPlans((prevPlans) => [...prevPlans, newPlan]);
-
     try {
+      const token = getToken();
+
       const response = await axios.post<plan>(APIUrl + "plans/@me", data, {
-        signal: controller.signal,
         headers: { Authorization: "Bearer " + token },
       });
+
       setPlans((prevPlans) => prevPlans.filter((plan) => plan.id !== 0.1));
       setPlans((prevPlans) => [...prevPlans, response.data]);
-      return null;
+
+      return undefined;
     } catch (err) {
-      setPlans((prevPlans) => prevPlans.filter((plan) => plan.id !== 0.1));
       await handleApiError(err);
+
       if (retryCount < maxRetryCount) {
         retryCount++;
         console.log(`Retrying request (attempt ${retryCount})...`);
+
         return attemptRequest(); // Retry the request
       } else {
         setPlans((prevPlans) => prevPlans.filter((plan) => plan.id !== 0.1));
+
         return await handleApiError(err); // Max retry attempts reached, handle the error
       }
     }
@@ -205,9 +286,9 @@ export const createPlan = async (
 export const deletePlan = async (
   plan_id: number,
   setPlans: React.Dispatch<React.SetStateAction<plan[]>>
-) => {
-  const controller = new AbortController();
-  const token = getToken();
+): Promise<any> => {
+  const maxRetryCount = 3; // Maximum number of retry attempts
+  let retryCount = 0;
 
   let removedPlan: plan = {} as plan;
 
@@ -222,51 +303,67 @@ export const deletePlan = async (
     return updatedPlans;
   });
 
-  try {
-    const response = await axios.delete(
-      APIUrl + "plans/@me/" + plan_id.toString(),
-      {
-        signal: controller.signal,
-        headers: { Authorization: "Bearer " + token },
+  const attemptRequest = async (): Promise<any> => {
+    try {
+      const token = getToken();
+
+      const response = await axios.delete(
+        APIUrl + "plans/@me/" + plan_id.toString(),
+        {
+          headers: { Authorization: "Bearer " + token },
+        }
+      );
+
+      return undefined;
+    } catch (err) {
+      await handleApiError(err);
+
+      if (retryCount < maxRetryCount) {
+        retryCount++;
+        console.log(`Retrying request (attempt ${retryCount})...`);
+
+        return attemptRequest(); // Retry the request
+      } else {
+        if (removedPlan.id !== undefined) {
+          setPlans((prevPlans) => [...prevPlans, removedPlan]);
+        }
+
+        return await handleApiError(err); // Max retry attempts reached, handle the error
       }
-    );
-    return;
-  } catch (err) {
-    if (removedPlan.id !== undefined) {
-      setPlans((prevPlans) => [...prevPlans, removedPlan]);
     }
-    return handleApiError(err);
-  }
+  };
+
+  return attemptRequest();
 };
 
 export const getIndividualPlan = async (
   id: number,
   setIndividualPLan: React.Dispatch<React.SetStateAction<TotalPlanData>>
-) => {
-  // Specify the return type
+): Promise<any> => {
   const maxRetryCount = 3; // Maximum number of retry attempts
   let retryCount = 0;
 
   const attemptRequest = async (): Promise<any> => {
-    // Specify the return type
-    const controller = new AbortController();
-    const token = getToken();
-
     try {
+      const token = getToken();
+
       const response = await axios.get<TotalPlanData>(
         APIUrl + "plans/@me/" + id.toString(),
         {
-          signal: controller.signal,
           headers: { Authorization: "Bearer " + token },
         }
       );
+
       setIndividualPLan(response.data);
-      return null;
+
+      return undefined;
     } catch (err) {
       await handleApiError(err);
+
       if (retryCount < maxRetryCount) {
         retryCount++;
         console.log(`Retrying request (attempt ${retryCount})...`);
+
         return attemptRequest(); // Retry the request
       } else {
         return await handleApiError(err); // Max retry attempts reached, handle the error

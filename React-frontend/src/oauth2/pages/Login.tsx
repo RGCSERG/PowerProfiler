@@ -9,10 +9,12 @@ const Login = () => {
   const [redirectToUser, setRedirectToUser] = useState(false);
   const [error, setError] = useState("");
 
-  const handleError = (requestError: any) => {
+  const handleError = (requestError: string | undefined) => {
     if (typeof requestError === "string") {
       setError(requestError);
-    } else if (requestError === null) {
+
+      return; // Return early to prevent further execution
+    } else if (requestError === undefined) {
       setRedirectToUser(true);
     }
   };
@@ -26,17 +28,24 @@ const Login = () => {
     const refreshToken = cookies.get("refresh_token");
     const accessToken = sessionStorage.getItem("accessToken");
 
-    const fetchData = async () => {
+    if (redirectToUser === true) {
+      return;
+    }
+
+    const refresh = async (): Promise<any> => {
       if (!accessToken && refreshToken) {
-        // Wait for refreshAccessToken to complete
-        const requestError = await refreshAccessToken(refreshToken);
-        handleError(requestError);
-      } else if (accessToken !== null) {
+        const err = await refreshAccessToken(refreshToken);
+
+        handleError(err);
+        if (err === undefined) {
+          setRedirectToUser(true);
+        }
+      } else if (accessToken !== undefined && refreshToken) {
         setRedirectToUser(true);
       }
     };
 
-    fetchData();
+    refresh();
   }, [redirectToUser]);
 
   if (redirectToUser) {

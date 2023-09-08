@@ -22,33 +22,31 @@ const UserPage = () => {
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const handleError = (requestError: any) => {
+  const handleError = (requestError: string | undefined) => {
     if (typeof requestError === "string") {
       setError(requestError);
       setLoading(false); // Set loading to false to stop the spinner
     }
-    if (requestError !== "Network Error") {
-      setError("");
-    }
+
     return; // Return early to prevent further execution
   };
 
   const handleDeletePlan = async (plan_id: number) => {
     setLoading(true);
-    handleError(await deletePlan(plan_id, setPlans));
-    setLoading(false);
+    const err = await deletePlan(plan_id, setPlans);
+    handleError(err);
   };
 
   const handleCreatePlan = async (data: newPlan) => {
     setLoading(true);
-    handleError(await createPlan(data, userData.id, setPlans));
-    setLoading(false);
+    const err = await createPlan(data, userData.id, setPlans);
+    handleError(err);
   };
 
   const handleUpdateUser = async (user: updatedUser) => {
     setLoading(true);
-    handleError(await updateUser(user, userData, setUserData, signOut));
-    setLoading(false);
+    const err = await updateUser(user, userData, setUserData, signOut);
+    handleError(err);
   };
 
   const signOut = () => {
@@ -65,7 +63,7 @@ const UserPage = () => {
     const userDataError = await getUserData(setUserData);
     handleError(userDataError);
 
-    if (!userDataError) {
+    if (userDataError === undefined) {
       const plansError = await getUserPlans(setPlans);
       handleError(plansError);
     }
@@ -75,7 +73,12 @@ const UserPage = () => {
 
   useEffect(() => {
     const accessToken = getToken();
-    if (accessToken === null) {
+
+    if (redirectToUser === true) {
+      return;
+    }
+
+    if (accessToken === undefined) {
       setRedirectToUser(true);
       return; // Exit the useEffect early
     }
@@ -83,7 +86,7 @@ const UserPage = () => {
     if (redirectToUser === false) {
       refresh();
     }
-  }, []);
+  }, [redirectToUser]);
 
   if (redirectToUser) {
     return <Navigate to="/" />;

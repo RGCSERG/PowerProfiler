@@ -8,20 +8,21 @@ export const setToken = (token: string) => {
 
 export const getToken = () => {
   let temp = sessionStorage.getItem("accessToken");
-  if (temp !== null) {
+  if (temp !== undefined) {
     return temp;
   } else {
     console.log("No user data found in session storage.");
-    return null;
+    return undefined;
   }
 };
+
 // export const setUser = (data: User) => {
 //   sessionStorage.setItem("userData", JSON.stringify(data));
 // };
 
 // export const getUser = () => {
 //   let temp = sessionStorage.getItem("userData");
-//   if (temp !== null) {
+//   if (temp !== undefined) {
 //     return JSON.parse(temp) as User;
 //   } else {
 //     console.log("No user data found in session storage.");

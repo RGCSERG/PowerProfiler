@@ -1,31 +1,31 @@
 import axios, { AxiosError } from "axios";
 import { errorResponse } from "./interfaces";
 import { cookies } from "./cookiemanagement";
-import { refreshAccessToken } from "./HTTPRequests";
+import { refreshAccessToken } from "./HTTPRequests1";
 import { setToken } from "./UserManagement";
 
 export const handleApiError = async (err: unknown, refresh?: boolean) => {
   if (refresh) {
     setToken("");
     cookies.remove("refresh_token");
-    return ["", false]; // Early return if refresh flag is set
+    return "Refresh Token Expired"; // Early return if refresh flag is set
   }
 
   if (axios.isCancel(err)) {
-    return ["", false];
+    return "Request Cancelled";
   }
 
   if (!axios.isAxiosError(err)) {
     const errorMessage =
       err instanceof Error ? err.message : "An unknown error occurred";
-    return [errorMessage, false]; // Set the error message in state
+    return errorMessage; // Set the error message in state
   }
 
   const axiosError = err as AxiosError<errorResponse>;
 
   if (!axiosError.response?.data) {
     const errorMessage = axiosError.message || "An error occurred";
-    return [errorMessage, false]; // Set the error message in state
+    return errorMessage; // Set the error message in state
   }
 
   const detail = axiosError.response.data.detail;
@@ -34,8 +34,10 @@ export const handleApiError = async (err: unknown, refresh?: boolean) => {
     setToken("");
     const refresh_token = cookies.get("refresh_token");
     if (refresh_token) {
-      await refreshAccessToken(refresh_token);
-      return null; // Token refreshed successfully
+      const error = await refreshAccessToken(refresh_token);
+      if (error === undefined) {
+        return undefined; // Token refreshed successfully
+      }
     }
   }
 
