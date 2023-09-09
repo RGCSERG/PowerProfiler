@@ -4,11 +4,17 @@ import { TotalPlanData } from "../interfaces";
 import { baseTotalPlanDataModel } from "../constants";
 import { getIndividualPlan } from "../HTTPRequests";
 import { getToken } from "../UserManagement";
+import { Accordion } from "react-bootstrap";
+import TotalPlanPlaceholder from "../components/TotalPlanPlaceholder";
 
-const PlanPage = () => {
+interface Props {
+  error: string;
+  setError: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const PlanPage = ({ error, setError }: Props) => {
   const { id } = useParams();
 
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [redirectToUser, setRedirectToUser] = useState(false);
   const [individualPlan, setIndividualPLan] = useState<TotalPlanData>(
@@ -57,8 +63,9 @@ const PlanPage = () => {
 
   return (
     <>
-      <div>ID: {id}</div>
-      <div>{JSON.stringify(individualPlan, undefined, 2)}</div>
+      {/* <div>ID: {id}</div>
+      <div>{JSON.stringify(individualPlan, undefined, 2)}</div> */}
+      <TotalPlanPlaceholder plan={individualPlan} />
     </>
   );
 };

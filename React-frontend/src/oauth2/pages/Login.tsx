@@ -5,9 +5,13 @@ import { Navigate } from "react-router-dom";
 import { loginFormData } from "../interfaces";
 import LoginFormPlaceHolder from "../components/LoginFormPlaceHolder";
 
-const Login = () => {
+interface Props {
+  error: string;
+  setError: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const Login = ({ error, setError }: Props) => {
   const [redirectToUser, setRedirectToUser] = useState(false);
-  const [error, setError] = useState("");
 
   const handleError = (requestError: string | undefined) => {
     if (typeof requestError === "string") {

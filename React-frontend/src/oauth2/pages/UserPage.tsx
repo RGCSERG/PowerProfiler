@@ -15,12 +15,17 @@ import {
   deletePlan,
 } from "../HTTPRequests";
 
-const UserPage = () => {
+interface Props {
+  userData: user;
+  setUserData: React.Dispatch<React.SetStateAction<user>>;
+  error: string;
+  setError: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const UserPage = ({ userData, setUserData, error, setError }: Props) => {
   const [redirectToUser, setRedirectToUser] = useState(false);
   const [plans, setPlans] = useState<plan[]>([]);
-  const [userData, setUserData] = useState<user>(baseUserModel);
   const [isLoading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   const handleError = (requestError: string | undefined) => {
     if (typeof requestError === "string") {

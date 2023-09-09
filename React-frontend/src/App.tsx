@@ -3,15 +3,37 @@ import { Route, Routes } from "react-router-dom";
 import UserPage from "./oauth2/pages/UserPage";
 import SignUp from "./oauth2/pages/SignUp";
 import PlanPage from "./oauth2/pages/PlanPage";
+import { baseUserModel } from "./oauth2/constants";
+import { useState } from "react";
+import { user } from "./oauth2/interfaces";
 
 const App = () => {
+  const [userData, setUserData] = useState<user>(baseUserModel);
+  const [error, setError] = useState("");
+
   return (
     <div className="App">
       <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="signup" element={<SignUp />} />
-        <Route path="/user" element={<UserPage />} />
-        <Route path="/user/plans/:id" element={<PlanPage />} />
+        <Route path="/" element={<Login error={error} setError={setError} />} />
+        <Route
+          path="signup"
+          element={<SignUp error={error} setError={setError} />}
+        />
+        <Route
+          path="/user"
+          element={
+            <UserPage
+              userData={userData}
+              setUserData={setUserData}
+              error={error}
+              setError={setError}
+            />
+          }
+        />
+        <Route
+          path="/user/plans/:id"
+          element={<PlanPage error={error} setError={setError} />}
+        />
       </Routes>
     </div>
   );

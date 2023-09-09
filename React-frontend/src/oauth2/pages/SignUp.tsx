@@ -10,9 +10,13 @@ import {
   getAccessToken,
 } from "../HTTPRequests";
 
-const SignUp = () => {
+interface Props {
+  error: string;
+  setError: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const SignUp = ({ error, setError }: Props) => {
   const [redirectToUser, setRedirectToUser] = useState(false);
-  const [error, setError] = useState("");
 
   const handleError = (requestError: string | undefined) => {
     if (typeof requestError === "string") {
