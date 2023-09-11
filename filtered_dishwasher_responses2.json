@@ -11,7 +11,7 @@
         "ratedCapacity": 14,
         "powerDelayStart": 4,
         "guaranteeDuration": 24,
-        "productGroup": "dishwashers2019",
+        "productGroup": "dishwashers",
         "waterCons": 9.5,
         "type": "BUILT_IN"
     },
@@ -27,7 +27,7 @@
         "ratedCapacity": 14,
         "powerDelayStart": 4,
         "guaranteeDuration": 24,
-        "productGroup": "dishwashers2019",
+        "productGroup": "dishwashers",
         "waterCons": 9.5,
         "type": "FREE_STANDING"
     },
@@ -43,7 +43,7 @@
         "ratedCapacity": 13,
         "powerDelayStart": 4,
         "guaranteeDuration": 24,
-        "productGroup": "dishwashers2019",
+        "productGroup": "dishwashers",
         "waterCons": 7.7,
         "type": "BUILT_IN"
     },
@@ -59,7 +59,7 @@
         "ratedCapacity": 13,
         "powerDelayStart": 4,
         "guaranteeDuration": 24,
-        "productGroup": "dishwashers2019",
+        "productGroup": "dishwashers",
         "waterCons": 9.5,
         "type": "BUILT_IN"
     },
@@ -75,7 +75,7 @@
         "ratedCapacity": 12,
         "powerDelayStart": 1,
         "guaranteeDuration": 24,
-        "productGroup": "dishwashers2019",
+        "productGroup": "dishwashers",
         "waterCons": 11,
         "type": "FREE_STANDING"
     },
@@ -91,7 +91,7 @@
         "ratedCapacity": 2,
         "powerDelayStart": 0,
         "guaranteeDuration": 12,
-        "productGroup": "dishwashers2019",
+        "productGroup": "dishwashers",
         "waterCons": 5,
         "type": "BUILT_IN"
     },
@@ -107,7 +107,7 @@
         "ratedCapacity": 9,
         "powerDelayStart": 1,
         "guaranteeDuration": 12,
-        "productGroup": "dishwashers2019",
+        "productGroup": "dishwashers",
         "waterCons": 9,
         "type": "BUILT_IN"
     }
