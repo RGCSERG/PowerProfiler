@@ -47,10 +47,10 @@ app.include_router(test.router)
 
 
 # @app.put("users/@me")
-# def updateUser(userData: User, Authorize: AuthJWT = Depends()):
-#     Authorize.jwt_required()
+# def updateUser(userData: User, Authorise: AuthJWT = Depends()):
+#     Authorise.jwt_required()
 
-#     current_user = get_user(Authorize.get_jwt_subject())
+#     current_user = get_user(Authorise.get_jwt_subject())
 #     return userData
 
 

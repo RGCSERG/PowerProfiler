@@ -9,10 +9,17 @@ import {
   TotalPlanData,
 } from "./interfaces";
 import axios from "axios";
-import { getToken, setToken } from "./UserManagement";
+import { getToken, setToken, signOut } from "./UserManagement";
 import { cookies } from "./cookiemanagement";
 import { handleApiError } from "./errors";
-import { APIUrl } from "./constants";
+import {
+  API_URL,
+  LOGIN_ENDPOINT,
+  NEW_USER_ENDPOINT,
+  PLAN_ENDPOINT,
+  REFRESH_ENDPOINT,
+  USER_ENDPOINT,
+} from "./constants";
 
 const options = {
   secure: true,
@@ -25,7 +32,10 @@ export const getAccessToken = async (user: loginFormData): Promise<any> => {
 
   const attemptRequest = async (): Promise<any> => {
     try {
-      const response = await axios.post<tokenData>(APIUrl + "login", user);
+      const response = await axios.post<tokenData>(
+        API_URL + LOGIN_ENDPOINT,
+        user
+      );
 
       cookies.set("refresh_token", response.data.refresh_token, options);
       setToken(response.data.access_token);
@@ -56,7 +66,7 @@ export const refreshAccessToken = async (
   const attemptRequest = async (): Promise<any> => {
     try {
       const response = await axios.post<tokenData>(
-        APIUrl + "refresh",
+        API_URL + REFRESH_ENDPOINT,
         {},
         {
           headers: { Authorization: "Bearer " + refresh_token },
@@ -88,7 +98,10 @@ export const createUser = async (user: signUpFormData): Promise<any> => {
 
   const attemptRequest = async (): Promise<any> => {
     try {
-      const response = await axios.post<user>(APIUrl + "users", user);
+      const response = await axios.post<user>(
+        API_URL + NEW_USER_ENDPOINT,
+        user
+      );
 
       return undefined;
     } catch (err) {
@@ -117,7 +130,7 @@ export const getUserPlans = async (
     try {
       const token = getToken();
 
-      const response = await axios.get<plan[]>(APIUrl + "plans/@me", {
+      const response = await axios.get<plan[]>(API_URL + PLAN_ENDPOINT, {
         headers: { Authorization: "Bearer " + token },
       });
 
@@ -150,7 +163,7 @@ export const getUserData = async (
     try {
       const token = getToken();
 
-      const resp = await axios.get<user>(APIUrl + "users/@me", {
+      const resp = await axios.get<user>(API_URL + USER_ENDPOINT, {
         headers: { Authorization: "Bearer " + token },
       });
 
@@ -174,8 +187,7 @@ export const getUserData = async (
 export const updateUser = async (
   newUser: updatedUser,
   userData: user,
-  setUserData: React.Dispatch<React.SetStateAction<user>>,
-  signOut: () => void
+  setUserData: React.Dispatch<React.SetStateAction<user>>
 ): Promise<any> => {
   const oldData = userData;
 
@@ -200,7 +212,7 @@ export const updateUser = async (
 
       // Perform API request
       const response = await axios.put<user>(
-        APIUrl + "users/@me",
+        API_URL + USER_ENDPOINT,
         updatedUserData,
         {
           headers: { Authorization: "Bearer " + token },
@@ -256,7 +268,7 @@ export const createPlan = async (
     try {
       const token = getToken();
 
-      const response = await axios.post<plan>(APIUrl + "plans/@me", data, {
+      const response = await axios.post<plan>(API_URL + PLAN_ENDPOINT, data, {
         headers: { Authorization: "Bearer " + token },
       });
 
@@ -308,7 +320,7 @@ export const deletePlan = async (
       const token = getToken();
 
       const response = await axios.delete(
-        APIUrl + "plans/@me/" + plan_id.toString(),
+        API_URL + PLAN_ENDPOINT + plan_id.toString(),
         {
           headers: { Authorization: "Bearer " + token },
         }
@@ -348,7 +360,7 @@ export const getIndividualPlan = async (
       const token = getToken();
 
       const response = await axios.get<TotalPlanData>(
-        APIUrl + "plans/@me/" + id.toString(),
+        API_URL + PLAN_ENDPOINT + id.toString(),
         {
           headers: { Authorization: "Bearer " + token },
         }

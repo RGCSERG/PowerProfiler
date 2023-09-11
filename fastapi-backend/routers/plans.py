@@ -1,62 +1,60 @@
 from fastapi import APIRouter, Depends, Response
 from ..functions import (
-    deleteUserPlan,
+    delete_user_plan,
     get_user,
-    getAllPlanData,
-    getUserPlans,
-    addUserPlan,
-    updateUserPlan,
+    get_all_plan_data,
+    get_user_plans,
+    add_user_plan,
+    update_user_plan,
 )
 from fastapi_jwt_auth import AuthJWT
 from pyparsing import Any
 from .. import schemas
 
-
 router = APIRouter(prefix="/plans", tags=["Plans"])
 
 
 @router.get("/@me", status_code=200)
-def getPlans(Authorise: AuthJWT = Depends()) -> Any:
+def get_plans(Authorise: AuthJWT = Depends()) -> Any:
     Authorise.jwt_required()
 
-    user_plans = getUserPlans(Authorise.get_jwt_subject())
+    user_plans = get_user_plans(Authorise.get_jwt_subject())
     return user_plans
 
 
 @router.post("/@me", status_code=201, response_model=schemas.Plan)
-def addPlan(newplan: schemas.AddPlan, Authorise: AuthJWT = Depends()) -> schemas.Plan:
+def add_plan(newplan: schemas.PlanBase, Authorise: AuthJWT = Depends()) -> schemas.Plan:
     Authorise.jwt_required()
 
     id = get_user(Authorise.get_jwt_subject()).id
-    plan = addUserPlan(newplan, owner_id=id)
+    plan = add_user_plan(newplan, owner_id=id)
     return plan
 
 
 @router.put("/@me", status_code=201, response_model=schemas.Plan)
-def updatePlan(
+def update_plan(
     amended_plan: schemas.UpdatePlan, Authorise: AuthJWT = Depends()
 ) -> schemas.Plan:
     Authorise.jwt_required()
 
     id = get_user(Authorise.get_jwt_subject()).id
-    updated_plan = updateUserPlan(data=amended_plan, owner_id=id)
+    updated_plan = update_user_plan(data=amended_plan, owner_id=id)
     return updated_plan
 
 
 @router.delete("/@me/{id}", status_code=204)
-def deletePlan(id: int, Authorise: AuthJWT = Depends()) -> Response:
+def delete_plan(id: int, Authorise: AuthJWT = Depends()) -> Response:
     Authorise.jwt_required()
 
     user_id = get_user(Authorise.get_jwt_subject()).id
-    deleteUserPlan(id=id, owner_id=user_id)
-
+    delete_user_plan(id=id, owner_id=user_id)
     return Response(status_code=204)
 
 
 @router.get("/@me/{id}", status_code=200)
-def getTotalPlan(id: int, Authorise: AuthJWT = Depends()) -> schemas.TotalPlanData:
+def get_total_plan(id: int, Authorise: AuthJWT = Depends()) -> schemas.TotalPlanData:
     Authorise.jwt_required()
 
     user_id = get_user(Authorise.get_jwt_subject()).id
-    returnData = getAllPlanData(id=id, owner_id=user_id)
+    returnData = get_all_plan_data(id=id, owner_id=user_id)
     return returnData

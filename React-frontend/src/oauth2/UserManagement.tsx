@@ -1,3 +1,6 @@
+import { useNavigate } from "react-router-dom";
+import { cookies } from "./cookiemanagement";
+
 export const setToken = (token: string) => {
   if (token === "") {
     sessionStorage.removeItem("accessToken");
@@ -16,6 +19,13 @@ export const getToken = () => {
   }
 };
 
+export const signOut = () => {
+  const navigate = useNavigate();
+
+  sessionStorage.clear();
+  cookies.remove("refresh_token");
+  navigate(`/`);
+};
 // export const setUser = (data: User) => {
 //   sessionStorage.setItem("userData", JSON.stringify(data));
 // };

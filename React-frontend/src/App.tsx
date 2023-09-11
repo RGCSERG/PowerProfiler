@@ -3,12 +3,12 @@ import { Route, Routes } from "react-router-dom";
 import UserPage from "./oauth2/pages/UserPage";
 import SignUp from "./oauth2/pages/SignUp";
 import PlanPage from "./oauth2/pages/PlanPage";
-import { baseUserModel } from "./oauth2/constants";
+import { BASE_USER_MODEL } from "./oauth2/constants";
 import { useState } from "react";
 import { user } from "./oauth2/interfaces";
 
 const App = () => {
-  const [userData, setUserData] = useState<user>(baseUserModel);
+  const [userData, setUserData] = useState<user>(BASE_USER_MODEL);
   const [error, setError] = useState("");
 
   return (

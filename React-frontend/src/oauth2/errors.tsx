@@ -1,13 +1,14 @@
 import axios, { AxiosError } from "axios";
 import { errorResponse } from "./interfaces";
 import { cookies } from "./cookiemanagement";
-import { refreshAccessToken } from "./HTTPRequests1";
-import { setToken } from "./UserManagement";
+import { refreshAccessToken } from "./HTTPRequests";
+import { setToken, signOut } from "./UserManagement";
 
 export const handleApiError = async (err: unknown, refresh?: boolean) => {
   if (refresh) {
     setToken("");
     cookies.remove("refresh_token");
+    signOut;
     return "Refresh Token Expired"; // Early return if refresh flag is set
   }
 

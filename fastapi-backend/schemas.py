@@ -1,8 +1,7 @@
-import datetime
 from pydantic import BaseModel
-from typing import List, Type, Union
 from fastapi_jwt_auth import AuthJWT
 from fastapi import Depends
+from typing import List, Type, Union
 
 
 class Token(BaseModel):
@@ -14,12 +13,15 @@ class TokenData(BaseModel):
     email: Union[str, None] = None
 
 
-class User(BaseModel):
-    id: int
+class UserBase(BaseModel):
     forename: str
     surname: str
-    password: str
     email: str
+
+
+class User(UserBase):
+    id: int
+    password: str
     date_created: str
     disabled: Union[bool, None] = None
 
@@ -29,27 +31,18 @@ class UserRequest(BaseModel):
     password: str
 
 
-class UpdateUser(BaseModel):
-    forename: str
-    surname: str
-    email: str
+class UpdateUser(UserBase):
     disabled: Union[bool, None] = None
 
 
-class UserNoPassword(BaseModel):
+class UserNoPassword(UserBase):
     id: int
-    forename: str
-    surname: str
-    email: str
     date_created: str
     disabled: Union[bool, None] = None
 
 
-class NewUser(BaseModel):
-    forename: str
-    surname: str
+class NewUser(UserBase):
     password: str
-    email: str
 
 
 class OauthResponse(BaseModel):
@@ -58,10 +51,10 @@ class OauthResponse(BaseModel):
 
     @classmethod
     def create_tokens(
-        cls, user_email: str, Authorize: AuthJWT = Depends()
+        cls, user_email: str, Authorise: AuthJWT = Depends()
     ) -> "OauthResponse":
-        access_token = Authorize.create_access_token(subject=user_email)
-        refresh_token = Authorize.create_refresh_token(subject=user_email)
+        access_token = Authorise.create_access_token(subject=user_email)
+        refresh_token = Authorise.create_refresh_token(subject=user_email)
         return cls(access_token=access_token, refresh_token=refresh_token)
 
 
@@ -70,29 +63,33 @@ class RefreshResponse(BaseModel):
 
     @classmethod
     def refresh_token(
-        cls, current_user: str, Authorize: AuthJWT = Depends()
+        cls, current_user: str, Authorise: AuthJWT = Depends()
     ) -> "RefreshResponse":
-        new_access_token = Authorize.create_access_token(subject=current_user)
+        new_access_token = Authorise.create_access_token(subject=current_user)
         return cls(access_token=new_access_token)
 
 
-class Plan(BaseModel):
+class PlanBase(BaseModel):
+    type: int
+
+
+class Plan(PlanBase):
     id: int
     total_cost: int
     users: int
     owner_id: int
-    type: int
     date_created: str
 
 
-class UpdatePlan(BaseModel):
+class UpdatePlan(PlanBase):
     id: int
     owner_id: int
-    type: int
 
 
-class AddPlan(BaseModel):
-    type: int
+class PlanType(BaseModel):
+    id: int
+    data: str
+    date_created: str
 
 
 class Appliance(BaseModel):
@@ -112,7 +109,7 @@ class SubClass(BaseModel):
 
 class TotalPlanData(BaseModel):
     id: int
-    type: int
+    type: PlanType
     date_created: str
     owner_id: int
     users: int

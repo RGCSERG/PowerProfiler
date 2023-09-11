@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { TotalPlanData } from "../interfaces";
-import { baseTotalPlanDataModel } from "../constants";
+import { BASE_TOTAL_PLAN_DATA_MODEL } from "../constants";
 import { getIndividualPlan } from "../HTTPRequests";
 import { getToken } from "../UserManagement";
-import { Accordion } from "react-bootstrap";
 import TotalPlanPlaceholder from "../components/TotalPlanPlaceholder";
 
 interface Props {
@@ -18,7 +17,7 @@ const PlanPage = ({ error, setError }: Props) => {
   const [loading, setLoading] = useState(false);
   const [redirectToUser, setRedirectToUser] = useState(false);
   const [individualPlan, setIndividualPLan] = useState<TotalPlanData>(
-    baseTotalPlanDataModel
+    BASE_TOTAL_PLAN_DATA_MODEL
   );
 
   const handleError = (requestError: string | undefined) => {

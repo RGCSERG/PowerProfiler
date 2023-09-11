@@ -1,7 +1,7 @@
-import { getToken } from "../UserManagement";
+import { getToken, signOut } from "../UserManagement";
 import UserDataContainer from "../components/UserDataContainer";
 import UserPlansContainer from "../components/UserPlansContainer";
-import { baseUserModel } from "../constants";
+import { BASE_USER_MODEL } from "../constants";
 import { cookies } from "../cookiemanagement";
 import { plan, user, updatedUser, newPlan } from "../interfaces";
 import { useEffect, useState } from "react";
@@ -50,16 +50,8 @@ const UserPage = ({ userData, setUserData, error, setError }: Props) => {
 
   const handleUpdateUser = async (user: updatedUser) => {
     setLoading(true);
-    const err = await updateUser(user, userData, setUserData, signOut);
+    const err = await updateUser(user, userData, setUserData);
     handleError(err);
-  };
-
-  const signOut = () => {
-    sessionStorage.clear();
-    setUserData(baseUserModel);
-    setPlans([]);
-    cookies.remove("refresh_token");
-    setRedirectToUser(true);
   };
 
   const refresh = async () => {

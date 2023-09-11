@@ -11,24 +11,24 @@ const PlanSubClassPlaceholder = ({ subClasses }: Props) => {
     <>
       {subClasses &&
         subClasses.map((subClass) => {
-          return (
-            <Accordion defaultActiveKey="0">
-              <br />
-              <Accordion.Item eventKey="1">
-                <Accordion.Header>{subClass.name}</Accordion.Header>
-                <Accordion.Body>
-                  <ListGroup>
-                    <ListGroup.Item>
-                      Date Created: {subClass.date_created}
-                    </ListGroup.Item>
-                  </ListGroup>
-                  <br />
-                  Appliances:
+          <Accordion defaultActiveKey="0">
+            <br />
+            <Accordion.Item eventKey="1">
+              <Accordion.Header>{subClass.name}</Accordion.Header>
+              <Accordion.Body>
+                <ListGroup>
+                  <ListGroup.Item>
+                    Date Created: {subClass.date_created}
+                  </ListGroup.Item>
+                </ListGroup>
+                <br />
+                Appliances:
+                {subClass.appliances && (
                   <AppliancePlaceholder appliances={subClass.appliances} />
-                </Accordion.Body>
-              </Accordion.Item>
-            </Accordion>
-          );
+                )}
+              </Accordion.Body>
+            </Accordion.Item>
+          </Accordion>;
         })}
     </>
   );

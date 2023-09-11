@@ -59,16 +59,22 @@ export interface SubClass {
   id: number;
   name: string;
   plan_id: number;
-  appliances: Appliance[];
+  appliances?: Appliance[];
+  date_created: string;
+}
+
+export interface PlanType {
+  id: number;
+  data: string;
   date_created: string;
 }
 
 export interface TotalPlanData {
   id: number;
-  type: number;
+  type: PlanType;
   date_created: string;
   owner_id: number;
   users: number;
   total_cost: number;
-  SubClasses: SubClass[];
+  SubClasses?: SubClass[];
 }
