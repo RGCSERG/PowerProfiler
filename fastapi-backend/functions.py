@@ -216,6 +216,23 @@ def get_all_plan_data(id: int, owner_id: int) -> schemas.TotalPlanData:
         raise CustomHTTPExceptionImpl.database_error()
 
 
+def add_user_subclass(data: schemas.BaseSubClass) -> schemas.Plan:
+    try:
+        cursor.execute(
+            """INSERT INTO public."SubClass" (plan_id, name) VALUES (%s,%s) RETURNING * """,
+            (data.plan_id, data.name),
+        )
+        plan = cursor.fetchone()
+        if plan is None:
+            raise CustomHTTPExceptionImpl.entry_failed()
+
+        conn.commit()
+        json_compatible_item_data = jsonable_encoder(plan)
+        return schemas.Plan(**json_compatible_item_data)
+    except psycopg2.Error as error:
+        raise CustomHTTPExceptionImpl.entry_failed()
+
+
 def test(id: int):
     cursor.execute(
         """SELECT

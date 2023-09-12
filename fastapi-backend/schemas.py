@@ -92,18 +92,24 @@ class PlanType(BaseModel):
     date_created: str
 
 
-class Appliance(BaseModel):
-    id: int
+class BaseAppliance(BaseModel):
     data: str
     name: str
+
+
+class Appliance(BaseAppliance):
+    id: int
     date_created: str
 
 
-class SubClass(BaseModel):
-    id: int
+class BaseSubClass(BaseModel):
     name: str
     plan_id: int
     appliances: Union[List[Appliance], None] = None
+
+
+class SubClass(BaseSubClass):
+    id: int
     date_created: str
 
 
