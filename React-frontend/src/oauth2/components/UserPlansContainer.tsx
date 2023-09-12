@@ -1,8 +1,9 @@
-import { Alert, Button } from "react-bootstrap";
+import { Alert, Button, Modal } from "react-bootstrap";
 import { newPlan, plan } from "../interfaces";
 import { useState } from "react";
 import NewPlanForm from "./NewPlanForm";
 import { useNavigate } from "react-router-dom";
+import MakeChangesModal from "./MakeChangesModal";
 
 interface Props {
   plans: plan[];
@@ -20,6 +21,7 @@ const UserPlansContainer = ({
   onDelete,
 }: Props) => {
   const [adding, setAdding] = useState(false);
+  const [show, setShow] = useState(false);
   const navigate = useNavigate();
 
   const goToPlan = (id: number) => {
@@ -31,14 +33,8 @@ const UserPlansContainer = ({
     setAdding(false);
   };
 
-  const confirmDelete = (id: number) => {
-    const shouldDelete = window.confirm(
-      "Are you sure you want to delete this plan?"
-    );
-    if (shouldDelete) {
-      onDelete(id);
-    }
-  };
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
 
   return (
     <ul className="list-group">
@@ -77,7 +73,7 @@ const UserPlansContainer = ({
                 <button
                   className="btn btn-outline-danger mb-1"
                   disabled={plan.id === 0.1}
-                  onClick={() => confirmDelete(plan.id)}
+                  onClick={handleShow}
                 >
                   Delete
                 </button>
@@ -89,6 +85,17 @@ const UserPlansContainer = ({
                   Edit
                 </button>
               </td>
+              {show && (
+                <MakeChangesModal
+                  handleClose={handleClose}
+                  handleChanges={() => {
+                    onDelete(plan.id);
+                    handleClose();
+                  }}
+                  title="Delete Plan?"
+                  body={`Are you sure you want to delete ${plan.id.toString()}?`}
+                />
+              )}
             </tr>
           ))}
         </tbody>

@@ -186,7 +186,7 @@ def get_all_plan_data(id: int, owner_id: int) -> schemas.TotalPlanData:
                                 FROM public."Appliance" AS A
                                 JOIN public."OwnedAppliance" AS OA ON A.id = OA.appliance_id
                                 WHERE OA.subclass_id = S.id
-                            )
+                            )   
                         )
                     )
                     FROM public."SubClass" AS S

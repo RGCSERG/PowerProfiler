@@ -1,4 +1,4 @@
-import { getToken, signOut } from "../UserManagement";
+import { getToken } from "../UserManagement";
 import UserDataContainer from "../components/UserDataContainer";
 import UserPlansContainer from "../components/UserPlansContainer";
 import { BASE_USER_MODEL } from "../constants";
@@ -52,6 +52,14 @@ const UserPage = ({ userData, setUserData, error, setError }: Props) => {
     setLoading(true);
     const err = await updateUser(user, userData, setUserData);
     handleError(err);
+  };
+
+  const signOut = () => {
+    sessionStorage.clear();
+    setUserData(BASE_USER_MODEL);
+    setPlans([]);
+    cookies.remove("refresh_token");
+    setRedirectToUser(true);
   };
 
   const refresh = async () => {
