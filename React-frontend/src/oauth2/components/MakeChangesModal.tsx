@@ -1,4 +1,3 @@
-import React from "react";
 import { Button, Modal } from "react-bootstrap";
 
 interface Props {
@@ -6,6 +5,8 @@ interface Props {
   handleChanges: () => void;
   title: string;
   body: string;
+  successMessage: string;
+  dangerMessage: string;
 }
 
 const MakeChangesModal = ({
@@ -13,6 +14,8 @@ const MakeChangesModal = ({
   handleChanges,
   title,
   body,
+  successMessage,
+  dangerMessage,
 }: Props) => {
   return (
     <Modal show={true} onHide={handleClose}>
@@ -22,10 +25,10 @@ const MakeChangesModal = ({
       <Modal.Body>{body}</Modal.Body>
       <Modal.Footer>
         <Button variant="outline-success" onClick={handleClose}>
-          Cancel
+          {successMessage}
         </Button>
         <Button variant="outline-danger" onClick={handleChanges}>
-          Delete
+          {dangerMessage}
         </Button>
       </Modal.Footer>
     </Modal>

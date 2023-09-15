@@ -1,4 +1,4 @@
-import { Alert, Button, Modal } from "react-bootstrap";
+import { Alert, Button } from "react-bootstrap";
 import { newPlan, plan } from "../interfaces";
 import { useState } from "react";
 import NewPlanForm from "./NewPlanForm";
@@ -92,8 +92,10 @@ const UserPlansContainer = ({
                     onDelete(plan.id);
                     handleClose();
                   }}
-                  title="Delete Plan?"
+                  title="Delete Plan"
                   body={`Are you sure you want to delete ${plan.id.toString()}?`}
+                  successMessage="Cancel"
+                  dangerMessage="Delete"
                 />
               )}
             </tr>

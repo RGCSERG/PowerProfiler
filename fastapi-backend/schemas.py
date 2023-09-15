@@ -4,47 +4,6 @@ from fastapi import Depends
 from typing import List, Type, Union
 
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-
-class TokenData(BaseModel):
-    email: Union[str, None] = None
-
-
-class UserBase(BaseModel):
-    forename: str
-    surname: str
-    email: str
-
-
-class User(UserBase):
-    id: int
-    password: str
-    date_created: str
-    disabled: Union[bool, None] = None
-
-
-class UserRequest(BaseModel):
-    email: str
-    password: str
-
-
-class UpdateUser(UserBase):
-    disabled: Union[bool, None] = None
-
-
-class UserNoPassword(UserBase):
-    id: int
-    date_created: str
-    disabled: Union[bool, None] = None
-
-
-class NewUser(UserBase):
-    password: str
-
-
 class OauthResponse(BaseModel):
     access_token: str
     refresh_token: Union[str, None] = None
@@ -67,6 +26,38 @@ class RefreshResponse(BaseModel):
     ) -> "RefreshResponse":
         new_access_token = Authorise.create_access_token(subject=current_user)
         return cls(access_token=new_access_token)
+
+
+class UserRequest(BaseModel):
+    email: str
+    password: str
+
+
+class UserBase(BaseModel):
+    forename: str
+    surname: str
+    email: str
+
+
+class User(UserBase):
+    id: int
+    password: str
+    date_created: str
+    disabled: Union[bool, None] = None
+
+
+class UpdateUser(UserBase):
+    disabled: Union[bool, None] = None
+
+
+class UserNoPassword(UserBase):
+    id: int
+    date_created: str
+    disabled: Union[bool, None] = None
+
+
+class NewUser(UserBase):
+    password: str
 
 
 class PlanBase(BaseModel):
